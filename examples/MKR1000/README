@@ -1,0 +1,10 @@
+This directory contains the following examples:
+
+* base-test: basic example that shows how to connect and Arduino MKR-1000 to
+Vizibles and send data to the platform.
+
+* temp-hum: it shows how to build a connected thermometer and higrometer using
+an Arduino MKR-1000 with a KY-015 DHT11 sensor:
+https://tkkrlab.nl/wiki/Arduino_KY-015_Temperature_and_humidity_sensor_module
+It also shows how to 'expose' a function, so that you can then create a control
+to invoke that function passing it parameters from your dashboard.
