@@ -1,11 +1,11 @@
 ###############################################
-# Syntax Coloring Map For ViziblesSensorClient
+# Syntax Coloring Map For ViziblesArduino
 ###############################################
 
 ###############################################
 # Class name (KEYWORD1)
 ###############################################
-Vizibles-Arduino-library	KEYWORD1
+ViziblesArduino	KEYWORD1
 ###############################################
 # Methods and Functions (KEYWORD2)
 ###############################################
