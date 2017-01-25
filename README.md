@@ -1,17 +1,17 @@
 # Introduction
 
-This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programer to conentrate efforts on its application and forget about things like security, pairong, etc.
-The library is ready to use with some simple running examples. Just follow the steps below to ge everything working. By the way, do not forget to register into Vizibles.
+This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programmer to focus efforts on its application and forget about things like security, pairing, etc.
+The library is ready to use with some simple running examples. Just follow the steps below to get everything working. By the way, do not forget to register into Vizibles.
  
 # Install the Arduino IDE
 
 If you do not have it yet or your Arduino IDE verion is not up to date please follow the links and instructions [here](https://www.arduino.cc/en/main/software) for installing the latest version.
-Once you have the IDE installed you will need to install also the support libraries for the board you will use, if it is not an original Arduino board, as for example, if you are using ESP8266 based boards, like I am doing, yo will need to install the libraries for supporting ESP8266 based boards. In the main IDE window go to File, Preferences, and in the Additional Boards Manager URLs text box write '''http://arduino.esp8266.com/stable/package_esp8266com_index.json'''
+Once you have the IDE installed you will need to install also the support libraries for the board you will use, if it is not an original Arduino board, as for example, if you are using ESP8266 based boards, like I am doing, yo will need to install the libraries for supporting ESP8266 based boards. In the main IDE window go to File, Preferences, and in the Additional Boards Manager URLs text box write ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```
 
 #Installing the libraries
 
 To make this run you will need to clone or download a copy of the ViziblesSensorClient library to your Arduino IDE libraries' directory, but you will need to tdo also the same with these othe libraries:
-Crypto suite:https://github.com/spaniakos/Cryptosuite)
+Crypto suite:[https://github.com/spaniakos/Cryptosuite](https://github.com/spaniakos/Cryptosuite)
 Time:[https://github.com/PaulStoffregen/Time](https://github.com/PaulStoffregen/Time)
 HttpClient:[https://github.com/pablorodiz/HttpClient] https://github.com/pablorodiz/HttpClient
 Arduino web server library:[https://github.com/lasselukkari/aWOT.git](https://github.com/lasselukkari/aWOT.git)
