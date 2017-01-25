@@ -11,11 +11,17 @@ Once you have the IDE installed you will need to install also the support librar
 #Installing the libraries
 
 To make this run you will need to clone or download a copy of the ViziblesSensorClient library to your Arduino IDE libraries' directory, but you will need to tdo also the same with these othe libraries:
+
 Crypto suite:[https://github.com/spaniakos/Cryptosuite](https://github.com/spaniakos/Cryptosuite)
+
 Time:[https://github.com/PaulStoffregen/Time](https://github.com/PaulStoffregen/Time)
+
 HttpClient:[https://github.com/pablorodiz/HttpClient] https://github.com/pablorodiz/HttpClient
+
 Arduino web server library:[https://github.com/lasselukkari/aWOT.git](https://github.com/lasselukkari/aWOT.git)
+
 JSON: [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+
 Websockets: [https://github.com/pablorodiz/Arduino-Websocket.git](https://github.com/pablorodiz/Arduino-Websocket.git)
 
 #Supported architerctures
