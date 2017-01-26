@@ -1,6 +1,6 @@
 # Introduction
 
-This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programmer to focus efforts on its application and forget about things like security, pairing, etc.
+This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programmer to focus on its application and forget about things like security, pairing, etc.
 The library is ready to use with some simple running examples. Just follow the steps below to get everything working. By the way, do not forget to register into Vizibles.
  
 # Install the Arduino IDE
@@ -29,4 +29,117 @@ This driver is a work in progress, so we are currently working on adapting it to
 
 In the examples folder there are some ready to run. Some are specific for the MKR1000 board, but most were writen for the [Espresso Lite 2.0](http://www.espressolite.com/) which is the platorm we can recomend by now.
 Main examples are light-bulb and light-switch, that emulate a light and its corresponding switch. 
-you can run both examples on two different boards or run a script to emulate one of the parts in your computer. Just compile and have fun 
+you can run both examples on two different boards or run a script to emulate one of the parts in your computer. Just compile and have fun.
+But if you want a little more fun, you will want to play with the code, so let's explain it a little.
+The first part of the magic is the creation of the client itself. It is not simple, sinte it requires two socket clients and one server to work with. These clients and server must be created externally to keep the library architecture-independent, even you will not use them directly.
+```
+WiFiClient wc;
+WiFiClient wc1;
+WiFiServer ws(DEFAULT_THING_HTTP_SERVER_PORT);
+ViziblesArduino client(wc, wc1);
+
+```
+If you will not use network calls to local services on other things on your network you can go ahead and use only one WiFiClient oject, just use the same idetiefier in both parameters. In that case you must also consider to avoid the creation of a socket server, since you will probably not use it.
+Next thing we do is defining some callback functions we will use later on. So the library has a way to report us wen the device connects to the platform, when it disconnects, or when there is an error.
+```
+void errorCallback(void) {
+	Serial.println("Send to cloud failed");
+}
+void onConnectToVizibles(void) {
+#ifdef VZ_CLOUD_DEBUG
+	Serial.println("Connected to Vizibles");
+#endif /*VZ_CLOUD_DEBUG*/
+}
+
+void onDisconnectFromVizibles(void) {
+#ifdef VZ_CLOUD_DEBUG
+	Serial.println("Disconnected from Vizibles");
+#endif /*VZ_CLOUD_DEBUG*/	
+}	
+```
+Then we enter the setup function, where the main thing we do is connecting to the WiFi network of our choice
+```
+	WiFi.begin("YOUR_WIFI_SSID_HERE", "YOUR_WIFI_PASSWORD_HERE");
+	int i = 0;
+	while (WiFi.status() != WL_CONNECTED && i<5) {   
+		delay(500);
+		Serial.print(".");
+		i++;
+	}
+```
+Remember to write here the rigth credentials for your network. This is a work in progress. We expect to be a ble to pair things to any WiFi network by using a default configuarion with an AP running on the thing and a mobile applcation, but this is not yet ready, so in the mean time just connect using this method.
+Once you have network start the server if you will usit later on
+```
+	ws.begin();
+```
+And last thing to do on the setup is connecting to the [Vizibles plaform](https://vizibles.com). This is ok for a simple example, but for reliable products you should move the connection primitive to the main loop and manage reconnections when a disconnect is detected. As you can see in the code below we pass the callbacks for those events here.
+```
+	convertFlashStringToMemString(apikey, key);
+	//Get API key ID
+	convertFlashStringToMemString(apikeyID, keyid);
+	//Get thing ID
+	convertFlashStringToMemString(thingID, thingid);
+	keyValuePair options[] = {{"protocol", "ws"},
+							  {"id", thingid},
+							  {"keyID", keyid},
+							  {"keySecret", key},
+							  {(char *)NULL, (char *)NULL }};
+	
+	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
+```
+Most options have default values, so you only need to set the those with relevant values for your application.
+You might be thinking what ```convertFlashStringToMemString``` means. It is a good practice in Arduino to store strings in program memory for saving scarce RAM space, but the code to retrieve those strings start showhing everywhere in your code. So I've writen this macro to do it, which you can find on the file ```ViziblesArduino.h```.
+Once the thing is connected to the [Vizibles plaform](https://vizibles.com) it only needs to detect and report button switchs (light-switch) 
+```
+	int tmp = digitalRead(13);
+	if (tmp!=keyState) {
+		keyState = tmp;
+		if (keyState == 1) {
+			if(status == 0) status = 1;
+			else status = 0;
+			keyValuePair values[] = {{ "status", status?(char *)"on":(char *)"off" }, {NULL, NULL}};
+			client.update(values, &errorCallback);
+			lastUpdate = millis();
+		}
+	}		
+```
+or expose functions for turning light on or off (light-bulb)
+```
+	if(connected && exposed<2) {
+		switch(exposed) {
+			case 0: 
+				if(!client.expose("lightOff", lightOff, exposingErrorCallback)) exposed++;
+				break;
+			case 1:
+				if(!client.expose("lightOn", lightOn, exposingErrorCallback)) exposed++;
+				break;
+		}	
+	}
+```
+Corresponding callbacks:
+```
+void exposingErrorCallback(void) {
+	exposed--;
+}
+void lightOn(const char *parameters[]) {
+	digitalWrite(LED_OUT,LOW);
+	status = 0;
+	keyValuePair values[] = {{ "status", "on" }, {NULL, NULL}};
+	client.update(values, errorCallback);
+	lastUpdate = 0;
+}
+void lightOff(const char *parameters[]) {
+	digitalWrite(LED_OUT,HIGH);
+	status = 1;
+	keyValuePair values[] = {{ "status", "off" }, {NULL, NULL}};
+	client.update(values, errorCallback);
+	lastUpdate = 0;
+}
+```
+And finally, there is an additional task on the main loop. If you are offering a server, check it for connections and proceess them
+```
+	if(ws.hasClient()) { //Check if any client connected to server
+		WiFiClient c = ws.available();
+		client.process(&c);
+	} else client.process(NULL);
+```
