@@ -84,7 +84,6 @@ And last thing to do on the setup is connecting to the [Vizibles plaform](https:
 							  {"keyID", keyid},
 							  {"keySecret", key},
 							  {(char *)NULL, (char *)NULL }};
-	
 	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
 ```
 Most options have default values, so you only need to set the those with relevant values for your application.
@@ -136,10 +135,13 @@ void lightOff(const char *parameters[]) {
 	lastUpdate = 0;
 }
 ```
-And finally, there is an additional task on the main loop. If you are offering a server, check it for connections and proceess them
+And finally, there is an additional task on the main loop. If you are offering a server, check it for connections and process requests
 ```
 	if(ws.hasClient()) { //Check if any client connected to server
 		WiFiClient c = ws.available();
 		client.process(&c);
 	} else client.process(NULL);
 ```
+#Configuring the library
+
+There are some compile time configuration options in the library, mainly for srinking code size and/or increasing debug level. You will find all available options together on the file ```config.h```.
