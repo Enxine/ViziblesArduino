@@ -10,11 +10,11 @@ Once you have the IDE installed you will need to install also the support librar
 
 #Installing the libraries
 
-To make this run you will need to clone or download a copy of the ViziblesSensorClient library to your Arduino IDE libraries' directory, but you will need to tdo also the same with these othe libraries:
+To make this run you will need to clone or download a copy of the ViziblesArduino library to your Arduino IDE libraries' directory, but you will need to do the same also with these othe libraries:
 
-- Crypto suite:[https://github.com/spaniakos/Cryptosuite](https://github.com/spaniakos/Cryptosuite)ç
-- Time:[https://github.com/PaulStoffregen/Time](https://github.com/PaulStoffregen/Time)
-- HttpClient:[https://github.com/pablorodiz/HttpClient] https://github.com/pablorodiz/HttpClient
+- Crypto suite: [https://github.com/spaniakos/Cryptosuite](https://github.com/spaniakos/Cryptosuite)
+- Time: [https://github.com/PaulStoffregen/Time](https://github.com/PaulStoffregen/Time)
+- HttpClient: [https://github.com/pablorodiz/HttpClient](https://github.com/pablorodiz/HttpClient)
 - Arduino web server library:[https://github.com/lasselukkari/aWOT.git](https://github.com/lasselukkari/aWOT.git)
 - JSON: [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - Websockets: [https://github.com/pablorodiz/Arduino-Websocket.git](https://github.com/pablorodiz/Arduino-Websocket.git)
@@ -31,7 +31,7 @@ In the examples folder there are some ready to run. Some are specific for the MK
 Main examples are light-bulb and light-switch, that emulate a light and its corresponding switch. 
 you can run both examples on two different boards or run a script to emulate one of the parts in your computer. Just compile and have fun.
 But if you want a little more fun, you will want to play with the code, so let's explain it a little.
-The first part of the magic is the creation of the client itself. It is not simple, sinte it requires two socket clients and one server to work with. These clients and server must be created externally to keep the library architecture-independent, even you will not use them directly.
+The first part of the magic is the creation of the client itself. It is not simple, since it requires two socket clients and one server to work with. These clients and server must be created externally to keep the library architecture-independent, even you will not use them directly.
 ```
 WiFiClient wc;
 WiFiClient wc1;
@@ -39,8 +39,8 @@ WiFiServer ws(DEFAULT_THING_HTTP_SERVER_PORT);
 ViziblesArduino client(wc, wc1);
 
 ```
-If you will not use network calls to local services on other things on your network you can go ahead and use only one WiFiClient oject, just use the same idetiefier in both parameters. In that case you must also consider to avoid the creation of a socket server, since you will probably not use it.
-Next thing we do is defining some callback functions we will use later on. So the library has a way to report us wen the device connects to the platform, when it disconnects, or when there is an error.
+If you will not use network calls to local services on other things on your network you can go ahead and use only one WiFiClient object, just use the same identifier in both parameters. In that case you must also consider to avoid the creation of a socket server, since you will probably not use it.
+Next thing we do is defining some callback functions we will use later on. So the library has a way to report us when the device connects to the platform, when it disconnects, or when there is an error.
 ```
 void errorCallback(void) {
 	Serial.println("Send to cloud failed");
@@ -67,8 +67,8 @@ Then we enter the setup function, where the main thing we do is connecting to th
 		i++;
 	}
 ```
-Remember to write here the rigth credentials for your network. This is a work in progress. We expect to be a ble to pair things to any WiFi network by using a default configuarion with an AP running on the thing and a mobile applcation, but this is not yet ready, so in the mean time just connect using this method.
-Once you have network start the server if you will usit later on
+Remember to write here the rigth credentials for your network. This is a work in progress. We expect to be able to pair things to any WiFi network by using a default configuration with an AP running on the thing and a mobile application, but this is not yet ready, so in the mean time just connect using this method.
+Once you have network start the server if you will use it later on
 ```
 	ws.begin();
 ```
@@ -144,4 +144,4 @@ And finally, there is an additional task on the main loop. If you are offering a
 ```
 #Configuring the library
 
-There are some compile time configuration options in the library, mainly for srinking code size and/or increasing debug level. You will find all available options together on the file ```config.h```.
+There are some compile time configuration options in the library, mainly for shrinking code size and/or increasing debug level. You will find all available options together on the file ```config.h```.
