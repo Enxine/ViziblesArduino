@@ -1,8 +1,10 @@
 # Introduction
 
 This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programmer to focus on its application and forget about things like security, pairing, etc.
-The library is ready to use with some simple running examples. Just follow the steps below to get everything working. By the way, do not forget to register into Vizibles.
+The library is ready to use with some simple running examples. Just follow the steps below to get everything working. By the way, do not forget to register into [Vizibles](https://vizibles.com).
  
+Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/blob/master/README.md), [Espa?ol](https://github.com/Enxine/ViziblesArduino/blob/master/README.es.md) 
+
 # Install the Arduino IDE
 
 If you do not have it yet or your Arduino IDE verion is not up to date please follow the links and instructions [here](https://www.arduino.cc/en/main/software) for installing the latest version.
@@ -19,7 +21,7 @@ To make this run you will need to clone or download a copy of the ViziblesArduin
 - JSON: [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - Websockets: [https://github.com/pablorodiz/Arduino-Websocket.git](https://github.com/pablorodiz/Arduino-Websocket.git)
 
-#Supported architerctures
+#Supported architectures
 
 This driver is a work in progress, so we are currently working on adapting it to new architectures. Vizibles, even it was designed with constrained resources in mind is a demmanding platform with strong security requirements. So the libray is also quite demanding. Currently the Arduino (C++) version of the library is supported on the following architectures:
 - ESP8266 based boards
@@ -40,7 +42,7 @@ WiFiClient wc1;
 WiFiServer ws(DEFAULT_THING_HTTP_SERVER_PORT);
 ViziblesArduino client(wc, wc1);
 ```
-If you wnat to use secure (SSL) connections with the platform change the first line on the socket clients definition section to 
+If you want to use secure (SSL) connections with the platform change the first line on the socket clients definition section to 
 ```
 WiFiClientSecure wc;
 ```
@@ -91,9 +93,10 @@ And last thing to do on the setup is connecting to the [Vizibles plaform](https:
 							  {(char *)NULL, (char *)NULL }};
 	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
 ```
+Most options have default values, so you only need to set the those with relevant values for your application.
+
 If you want to use secure (SSL) connections with the platform change the ```"protocol"``` value to ```"wss"```.
  
-Most options have default values, so you only need to set the those with relevant values for your application.
 You might be thinking what ```convertFlashStringToMemString``` means. It is a good practice in Arduino to store strings in program memory for saving scarce RAM space, but the code to retrieve those strings start showhing everywhere in your code. So I've writen this macro to do it, which you can find on the file ```ViziblesArduino.h```.
 Once the thing is connected to the [Vizibles plaform](https://vizibles.com) it only needs to detect and report button switchs (light-switch) 
 ```
