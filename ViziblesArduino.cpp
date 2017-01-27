@@ -763,9 +763,11 @@ int ViziblesArduino::connect (
 int ViziblesArduino::connectToVizibles (void) {
 	LOGLN(F("[VSC] connectToVizibles()"));	
 	//Syncronize time with the server if this is the first time or more than one day passed from last synchronization
-	if (lastSync==0 || (lastSync + SYNCHRONIZATION_PERIOD < now())) {
-		int err = syncTime();
-		if (err) return err;
+	if (!strcmp_P(options.protocol, optionsProtocolWs) || (strcmp_P(options.protocol, optionsProtocolWss) && strcmp_P(options.protocol, optionsProtocolWs))) {
+		if (lastSync==0 || (lastSync + SYNCHRONIZATION_PERIOD < now())) {
+			int err = syncTime();
+			if (err) return err;
+		}
 	}	
 #ifdef VZ_WEBSOCKETS
 	// Connect to the websocket server
@@ -1073,10 +1075,12 @@ int ViziblesArduino::WSSendData (
 	if (cb!=NULL) LOG(F(", &callback"));
 	LOGLN(F(")"));	
 #endif /*VZ_CLOUD_DEBUG*/
-	if (lastSync==0 || (lastSync + SYNCHRONIZATION_PERIOD < now())) {
-		int err = syncTime();
-		if (err) return err;
-	}
+	if (!strcmp_P(options.protocol, optionsProtocolWs) || (strcmp_P(options.protocol, optionsProtocolWss) && strcmp_P(options.protocol, optionsProtocolWs))) {
+		if (lastSync==0 || (lastSync + SYNCHRONIZATION_PERIOD < now())) {
+			int err = syncTime();
+			if (err) return err;
+		}
+	}	
 	if (cloudConnected && webSocketClient.connected()) {
 		setNewPendingAck(cb, lastSequenceNumber++);
 		webSocketClient.sendData(payload, 1);
