@@ -24,6 +24,7 @@ To make this run you will need to clone or download a copy of the ViziblesArduin
 This driver is a work in progress, so we are currently working on adapting it to new architectures. Vizibles, even it was designed with constrained resources in mind is a demmanding platform with strong security requirements. So the libray is also quite demanding. Currently the Arduino (C++) version of the library is supported on the following architectures:
 - ESP8266 based boards
 - Arduino MKR1000
+SSL connections with the platform are only supported on ESP8266 based boards by now, but we are working hard to make it work on Atmel based boards.
 
 #Exploring the examples
 
@@ -37,7 +38,10 @@ WiFiClient wc;
 WiFiClient wc1;
 WiFiServer ws(DEFAULT_THING_HTTP_SERVER_PORT);
 ViziblesArduino client(wc, wc1);
-
+```
+If you wnat to use secure (SSL) connections with the platform change the first line on the socket clients definition section to 
+```
+WiFiClientSecure wc;
 ```
 If you will not use network calls to local services on other things on your network you can go ahead and use only one WiFiClient object, just use the same identifier in both parameters. In that case you must also consider to avoid the creation of a socket server, since you will probably not use it.
 Next thing we do is defining some callback functions we will use later on. So the library has a way to report us when the device connects to the platform, when it disconnects, or when there is an error.
@@ -86,6 +90,7 @@ And last thing to do on the setup is connecting to the [Vizibles plaform](https:
 							  {(char *)NULL, (char *)NULL }};
 	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
 ```
+If you wnat to use secure (SSL) connections with the platform change the ```"protocol"``` value to ```"wss"```. 
 Most options have default values, so you only need to set the those with relevant values for your application.
 You might be thinking what ```convertFlashStringToMemString``` means. It is a good practice in Arduino to store strings in program memory for saving scarce RAM space, but the code to retrieve those strings start showhing everywhere in your code. So I've writen this macro to do it, which you can find on the file ```ViziblesArduino.h```.
 Once the thing is connected to the [Vizibles plaform](https://vizibles.com) it only needs to detect and report button switchs (light-switch) 
