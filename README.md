@@ -24,6 +24,7 @@ To make this run you will need to clone or download a copy of the ViziblesArduin
 This driver is a work in progress, so we are currently working on adapting it to new architectures. Vizibles, even it was designed with constrained resources in mind is a demmanding platform with strong security requirements. So the libray is also quite demanding. Currently the Arduino (C++) version of the library is supported on the following architectures:
 - ESP8266 based boards
 - Arduino MKR1000
+
 SSL connections with the platform are only supported on ESP8266 based boards by now, but we are working hard to make it work on Atmel based boards.
 
 #Exploring the examples
