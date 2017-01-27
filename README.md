@@ -91,7 +91,8 @@ And last thing to do on the setup is connecting to the [Vizibles plaform](https:
 							  {(char *)NULL, (char *)NULL }};
 	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
 ```
-If you wnat to use secure (SSL) connections with the platform change the ```"protocol"``` value to ```"wss"```. 
+If you want to use secure (SSL) connections with the platform change the ```"protocol"``` value to ```"wss"```.
+ 
 Most options have default values, so you only need to set the those with relevant values for your application.
 You might be thinking what ```convertFlashStringToMemString``` means. It is a good practice in Arduino to store strings in program memory for saving scarce RAM space, but the code to retrieve those strings start showhing everywhere in your code. So I've writen this macro to do it, which you can find on the file ```ViziblesArduino.h```.
 Once the thing is connected to the [Vizibles plaform](https://vizibles.com) it only needs to detect and report button switchs (light-switch) 
