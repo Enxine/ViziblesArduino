@@ -27,9 +27,9 @@ This driver is a work in progress, so we are currently working on adapting it to
 
 #Exploring the examples
 
-In the examples folder there are some ready to run. Some are specific for the MKR1000 board, but most were writen for the [Espresso Lite 2.0](http://www.espressolite.com/) which is the platorm we can recomend by now.
+In the examples folder there are some ready to run. Some are specific for the MKR1000 board, but most where writen for the [Espresso Lite 2.0](http://www.espressolite.com/) which is the platform we can recomend by now.
 Main examples are light-bulb and light-switch, that emulate a light and its corresponding switch. 
-you can run both examples on two different boards or run a script to emulate one of the parts in your computer. Just compile and have fun.
+You can run both examples on two different boards or run a script to emulate one of the parts in your computer. Just compile and have fun.
 But if you want a little more fun, you will want to play with the code, so let's explain it a little.
 The first part of the magic is the creation of the client itself. It is not simple, since it requires two socket clients and one server to work with. These clients and server must be created externally to keep the library architecture-independent, even you will not use them directly.
 ```
@@ -67,7 +67,7 @@ Then we enter the setup function, where the main thing we do is connecting to th
 		i++;
 	}
 ```
-Remember to write here the rigth credentials for your network. This is a work in progress. We expect to be able to pair things to any WiFi network by using a default configuration with an AP running on the thing and a mobile application, but this is not yet ready, so in the mean time just connect using this method.
+Remember to write here the right credentials for your network. This is a work in progress. We expect to be able to pair things to any WiFi network by using a default configuration with an AP running on the thing and a mobile application, but this is not yet ready, so in the mean time just connect using this method.
 Once you have network start the server if you will use it later on
 ```
 	ws.begin();
