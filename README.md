@@ -3,7 +3,7 @@
 This library is intended for connecting Arduino based sensors and actuators to the [Vizibles IoT plaform](https://vizibles.com). Most communications complexity is hidden inside the library, so it offers an easy to use interface for the programmer to focus on its application and forget about things like security, pairing, etc.
 The library is ready to use with some simple running examples. Just follow the steps below to get everything working. By the way, do not forget to register into [Vizibles](https://vizibles.com).
  
-Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/blob/master/README.md), [Espa?ol](https://github.com/Enxine/ViziblesArduino/blob/master/README.es.md) 
+Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/blob/master/README.md), [Español](https://github.com/Enxine/ViziblesArduino/blob/master/README.es.md) 
 
 # Install the Arduino IDE
 
