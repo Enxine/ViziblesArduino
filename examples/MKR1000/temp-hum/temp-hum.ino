@@ -17,7 +17,7 @@
 // your system for this example to compile right:
 //
 // WiFi:            https://github.com/arduino-libraries/WiFi101
-// Web server:      https://github.com/sontono/aWOT
+// Web server:      https://github.com/lasselukkari/aWOT
 // HttpClient:      https://github.com/pablorodiz/HttpClient
 // Websockets:      https://github.com/pablorodiz/Arduino-Websocket
 // JSON:            https://github.com/bblanchon/ArduinoJson
