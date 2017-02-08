@@ -1,0 +1,6 @@
+This directory contains the following examples:
+
+* IOControl: it shows how to connect the I/O control board developed by Enxine
+to Vizibles. It is a board with capacity to control up to two inputs and two
+outputs at 220V, as you can read here:
+https://developers.vizibles.com/en/devices/conf2switch/
