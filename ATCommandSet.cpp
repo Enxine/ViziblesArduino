@@ -4,14 +4,12 @@
 //AT commands available
 //AT+CONNECT\r\n
 //AT+UPDATE="<variable name>","<variable value>"[,...]\r\n
-//AT+LISTEN\r\n
 //AT+EXPOSE="<function name>"\r\n
 //AT+DISCONNECT\r\n
 //AT+SETOPTION="<option name>","<option value>"[,...]\r\n
 
 /*Example command sequence (Light-switch)
-AT+SETOPTIONS="id","light-switch","keyID","Gp2naLrsSpFE","keySecret","wGyFTwIHvYwGCBDJyA7j","hostname","192.168.0.30","protocol","ws"
-AT+LISTEN
+AT+SETOPTIONS="id","light-switch","keyID","<YOUR_KEY_ID_HERE","keySecret","<YOUR_KEY_SECRET_HERE>"
 AT+CONNECT
 AT+UPDATE="status","on"
 ...
@@ -19,8 +17,7 @@ AT+DISCONNECT
 */
 
 /*Example command sequence (Light-bulb)
-AT+SETOPTIONS="id","light-bulb","keyID","Gp2naLrsSpFE","keySecret","wGyFTwIHvYwGCBDJyA7j","hostname","192.168.0.30","protocol","ws"
-AT+LISTEN
+AT+SETOPTIONS="id","light-bulb","keyID","<YOUR_KEY_ID_HERE","keySecret","<YOUR_KEY_SECRET_HERE>"
 AT+CONNECT
 AT+EXPOSE="lightOff"
 AT+EXPOSE="lightOn"
@@ -29,7 +26,6 @@ AT+DISCONNECT
 */
 
 const char ATConnect[] PROGMEM = "AT+CONNECT";
-//const char ATListen[] PROGMEM = "AT+LISTEN";
 const char ATUpdate[] PROGMEM = "AT+UPDATE";
 const char ATExpose[] PROGMEM = "AT+EXPOSE";
 const char ATDisconnect[] PROGMEM = "AT+DISCONNECT";
@@ -39,6 +35,12 @@ const char ATGetMAC[] PROGMEM = "AT+GETMAC";
 const char ATOK[] PROGMEM = "OK";
 const char ATError[] PROGMEM = "ERROR";
 const char ATEndLine[] PROGMEM = "\r\n";
+const char optionProtocol[] PROGMEM = "protocol";
+#if defined ESP8266
+const char optionProtocolDefault[] PROGMEM = "wss";
+#else	
+const char optionProtocolDefault[] PROGMEM = "ws";
+#endif /*ESP8266*/
 
 void SerialPrint_P(PGM_P str) {
   for (uint8_t c; (c = pgm_read_byte(str)); str++) Serial.write(c);
@@ -120,31 +122,37 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 		n = countOptions(line);
 		if(n>0 && n%2!=0){
 			SerialPrintln_P(ATError);
-			//Serial.println("1");
 			return;
 		}	
-		keyValuePair values[(n/2)+1];
-		values[n/2].name = NULL;
-		values[n/2].value = NULL;
+		keyValuePair values[(n/2)+2];
+		convertFlashStringToMemString(optionProtocol, _protocol);
+		convertFlashStringToMemString(optionProtocolDefault, _prot);
 		if(n>0) {
 			char *p[n];
 			if(parseOptions(line, p, n)!=n) {
-					SerialPrintln_P(ATError);
-					//Serial.println("2");
-					return;
+				SerialPrintln_P(ATError);
+				return;
 			} else {
 				int i = 0;
+				int protocol=0;
 				while(i<n) {
+					if(!strcmp_P(p[i],optionProtocol))	protocol=1;
 					values[i/2].name = p[i];
 					values[i/2].value = p[i+1];
-					//cloud.option(p[i], p[i+1]);
+					i+=2;
+				}
+				if(!protocol){
+					Serial.println(_prot);
+					values[i/2].name = _protocol;
+					values[i/2].value = _prot;	
 					i+=2;
 				}	
+				values[i/2].name = NULL;
+				values[i/2].value = NULL;
 			}
 		} else {
 			if(line[strlen_P(ATConnect)]!='\r' || line[strlen_P(ATConnect)+1]!='\n') {
 				SerialPrintln_P(ATError);
-				//Serial.println("3");
 				return;
 			}
 		}	
@@ -171,12 +179,6 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 		Serial.print(F("+MAC="));
 		Serial.println(mac);
 		///SerialPrintln_P(ATOK);
-/*	} else if(!strncmp_P(line, ATListen, strlen_P(ATListen))) { //AT+LISTEN\r\n
-		SerialPrintln_P(ATListen);
-		if(line[strlen_P(ATListen)]=='\r' && line[strlen_P(ATListen)+1]=='\n') {
-			cloud.listen();
-			SerialPrintln_P(ATOK);
-		} else SerialPrintln_P(ATError);	*/
 	} else if(!strncmp_P(line, ATUpdate, strlen_P(ATUpdate))) { //AT+UPDATE="<variable name>","<variable value>"[,...]\r\n
 		SerialPrintln_P(ATUpdate);
 		int n = 0;
@@ -222,20 +224,33 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 			cloud.disconnect();
 			SerialPrintln_P(ATOK);
 		} else SerialPrintln_P(ATError);	
-	} else if(!strncmp_P(line, ATOption, strlen_P(ATOption))) { //AT+SETOPTION="<option name>","<option value>"[,...]\r\n
+	} else if(!strncmp_P(line, ATOption, strlen_P(ATOption))) { //AT+SETOPTIONS="<option name>","<option value>"[,...]\r\n
 		SerialPrintln_P(ATOption);
 		int n = 0;
 		n = countOptions(line);
-		if(n%2!=0) SerialPrintln_P(ATError);
+		if(n%2!=0) {
+			SerialPrintln_P(ATError);
+			Serial.println("1");
+		}	
 		else {
 			char *p[n];
-			if(parseOptions(line, p, n)!=n) SerialPrintln_P(ATError);
+			if(parseOptions(line, p, n)!=n) {
+				SerialPrintln_P(ATError);
+				Serial.println("2");
+			}
 			else {
+				int protocol = 0;
 				int i = 0;
-				while(i<n) {
+				while(i<n){
+					if(!strcmp_P(p[i],optionProtocol))	protocol=1;
 					cloud.option(p[i], p[i+1]);
 					i+=2;
-				}	
+				}
+				if(!protocol){
+					convertFlashStringToMemString(optionProtocol, _protocol);
+					convertFlashStringToMemString(optionProtocolDefault, _prot);
+					cloud.option(_protocol, _prot);
+				}
 				SerialPrintln_P(ATOK);
 			}
 		}

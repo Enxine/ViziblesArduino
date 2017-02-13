@@ -708,9 +708,6 @@ int ViziblesArduino::connect (
 	}	
 	//Check all mandatory options are set
 	if (options.id==NULL || options.keySecret==NULL || options.keyID==NULL) return VIZIBLES_ERROR_INCORRECT_OPTIONS;
-	//if (options.id==NULL) setDefaultOption ("light-switch", &options.id);
-	//if (options.keySecret==NULL) setDefaultOption ("wGyFTwIHvYwGCBDJyA7j", &options.keySecret);
-	//if (options.keyID==NULL) setDefaultOption ("Gp2naLrsSpFE", &options.keyID);
 
 	//Use default options if not specified
 #if defined(VZ_WEBSOCKETS) && !defined(VZ_HTTP)
