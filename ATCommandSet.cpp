@@ -2,11 +2,13 @@
 #include <ATCommandSet.h>
 #include "platform.h"
 //AT commands available
-//AT+CONNECT\r\n
+//AT+CONNECT[="<option name>","<option value>"[,...]]\r\n
 //AT+UPDATE="<variable name>","<variable value>"[,...]\r\n
 //AT+EXPOSE="<function name>"\r\n
 //AT+DISCONNECT\r\n
-//AT+SETOPTION="<option name>","<option value>"[,...]\r\n
+//AT+SETOPTIONS="<option name>","<option value>"[,...]\r\n
+//AT+GETMAC\r\n
+//AT+WIFICONNECT="<SSID>","<password>"\r\n
 
 /*Example command sequence (Light-switch)
 AT+SETOPTIONS="id","light-switch","keyID","<YOUR_KEY_ID_HERE","keySecret","<YOUR_KEY_SECRET_HERE>"
