@@ -1,6 +1,6 @@
 # Vizibles AT client
 
-Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/examples/AT/blob/master/README.md), [Español](https://github.com/Enxine/ViziblesArduino/examples/AT/blob/master/README.es.md)
+Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/blob/master/examples/AT/README.md), [Español](https://github.com/Enxine/ViziblesArduino/blob/master/examples/AT/README.es.md)
 
 AT client firmware is valuable resource for platforms with not enough resources for running a full network client with SSL cryptography. It is a Serial-to-Vizibles converter, secure, and very easy to use, so if you have a serial port on your main processor and some power to feed an ESP8266 you can have access to [Vizibles](https://vizibles.com)
 For using the AT client you can compile this project for your board, or just download ad burn the [precompiled version](https://github.com/Enxine/ViziblesArduino/releases/) in your module. This version is tested to work on ESP-01 and ESP-WROOM-02 modules, but is expected to work in any other with enough memory, since only the serial port is used as hardware resource.  
