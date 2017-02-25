@@ -768,9 +768,14 @@ int ViziblesArduino::connectToVizibles (void) {
 	}	
 #ifdef VZ_WEBSOCKETS
 	// Connect to the websocket server
-	LOGLN(F("connectToVizibles(): Trying socket connection"));
 	if (!strcmp_P(options.protocol, optionsProtocolWss) || !strcmp_P(options.protocol, optionsProtocolWs)) {
+		LOG(F("connectToVizibles(): (mainClient)->connect("));
+		LOG(options.hostname);
+		LOG(F(", "));
+		LOG(options.port);
+		LOGLN(F(")"));
 		if ((mainClient)->connect(options.hostname, options.port)) {
+			LOGLN(F("connectToVizibles(): Socket opened, preparing headers for websocket"));
 			webSocketClient.path = "/thing";
 			char *path = webSocketClient.path;
 			//Create authorization headers
@@ -780,6 +785,7 @@ int ViziblesArduino::connectToVizibles (void) {
 			if (options.type!=NULL) typeIdLen = strlen(options.type) + 1; 
 			char headerAuthorization[93+keyIDLen+idLen+typeIdLen];
 			if (!strcmp_P(options.protocol, optionsProtocolWss)) {
+				LOGLN(F("connectToVizibles(): Creating authorization headers for secure websocket"));
 				strcpy_P(headerAuthorization, authorization);
 				strcpy(&headerAuthorization[24], options.keyID);
 				headerAuthorization[36] = ':';    	
@@ -791,6 +797,7 @@ int ViziblesArduino::connectToVizibles (void) {
 					strcpy(&headerAuthorization[59+idLen], options.id);
 				}
 			} else {
+				LOGLN(F("connectToVizibles(): Creating authorization headers for normal websocket"));
 				strcpy_P(&headerAuthorization[28 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen], date);
 				getDateString(&headerAuthorization[37 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen]);
 				strcpy_P(headerAuthorization, authorization);
@@ -814,6 +821,7 @@ int ViziblesArduino::connectToVizibles (void) {
 			itoa(options.port, &host[strlen(options.hostname)+1], 10);
 			webSocketClient.host = host;
 			webSocketClient.headers = headerAuthorization;
+			LOGLN(F("connectToVizibles(): Creating websocket"));
 			if (webSocketClient.handshake(*mainClient)) {
 				cloudConnected = 1;
 			} else {
@@ -829,6 +837,7 @@ int ViziblesArduino::connectToVizibles (void) {
 #ifdef VZ_HTTP
 	//Inform the platform thing is connected and get thing ID
 	if (!strcmp_P(options.protocol, optionsProtocolHttp)) {
+		LOGLN(F("connectToVizibles(): Trying socket connection"));
 		keyValuePair empty[] = { {NULL, NULL} };
 		char buf[79];
 		if (!this->sendMe(empty, buf, 79)) {
