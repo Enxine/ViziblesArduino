@@ -144,7 +144,7 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 					i+=2;
 				}
 				if(!protocol){
-					Serial.println(_prot);
+					//Serial.println(_prot);
 					values[i/2].name = _protocol;
 					values[i/2].value = _prot;	
 					i+=2;
@@ -158,7 +158,7 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 				return;
 			}
 		}	
-		if(cloud.connect(values, onConnectCB, onDisconnectCB)==VIZIBLES_ERROR_INCORRECT_OPTIONS) SerialPrintln_P(ATError);
+		if(cloud.connect(n>0?values:NULL, onConnectCB, onDisconnectCB)==VIZIBLES_ERROR_INCORRECT_OPTIONS) SerialPrintln_P(ATError);
 		else SerialPrintln_P(ATOK);
 	} else if(!strncmp_P(line, ATWifiConnect, strlen_P(ATWifiConnect))) { //AT+WIFICONNECT="<SSID>","<password>"\r\n
 			SerialPrintln_P(ATWifiConnect);
@@ -232,13 +232,13 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 		n = countOptions(line);
 		if(n%2!=0) {
 			SerialPrintln_P(ATError);
-			Serial.println("1");
+			//Serial.println("1");
 		}	
 		else {
 			char *p[n];
 			if(parseOptions(line, p, n)!=n) {
 				SerialPrintln_P(ATError);
-				Serial.println("2");
+				//Serial.println("2");
 			}
 			else {
 				int protocol = 0;
