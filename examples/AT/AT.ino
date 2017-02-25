@@ -54,7 +54,7 @@ unsigned int started = 0;
 void loop()
 {
 	if(!started) {
-		Serial.println(F("+VZ-READY>\r\n"));	
+		Serial.println(F("\r\n+VZ-READY>\r\n"));	
 		started = 1;
 	}
 	
