@@ -132,9 +132,12 @@ void ViziblesArduino::getConfigId(
 int ViziblesArduino::syncTime(void) {
 	//TODO implement signed version or use a more extended method for time synchronization
 	int err = 0;
-	convertFlashStringToMemString(timeUrl, tUrl);
+	int pathLen = options.apiBasePath==NULL?strlen_P(timeUrl):strlen(options.apiBasePath)+strlen_P(timeUrl);
+	char path[pathLen];
+	if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
+	strcpy_P(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)],timeUrl);
 	char response[22];
-	if (!(err = HTTPRequest(httpClient, options.hostname, DEFAULT_VIZIBLES_HTTP_PORT, tUrl, HTTP_METHOD_GET, NULL, NULL, NULL, response, 22))) {
+	if (!(err = HTTPRequest(httpClient, options.hostname, !strcmp_P(options.protocol, optionsProtocolWss)?DEFAULT_VIZIBLES_HTTP_PORT:options.port, path, HTTP_METHOD_GET, NULL, NULL, NULL, response, 22))) {
 		if (strlen(response)==21) {
 			response[19] = '\0';
 			unsigned long now = atol(&response[9]);
@@ -448,6 +451,7 @@ void ViziblesArduino::initializeOptions(void) {
 	options.ackTimeout = 0;
 	options.onConnectCallback = NULL;
 	options.onDisconnectCallback = NULL;
+	options.apiBasePath = NULL;
 	options.type = NULL;
 }	
 
@@ -475,6 +479,7 @@ int ViziblesArduino::setOption(
 	else if (copyValueTo == &options.keySecret) LOG(F("&options.keySecret"));
 	else if (copyValueTo == &options.thingId) LOG(F("&options.thingId"));
 	else if (copyValueTo == &options.type) LOG(F("&options.type"));
+	else if (copyValueTo == &options.apiBasePath) LOG(F("&options.apiBasePath"));
 	else ERR(F("UNKNOWN OPTION"));
 #endif	
 	LOGLN(F(")"));
@@ -499,6 +504,7 @@ int ViziblesArduino::setOption(
 			if (options.keySecret!=NULL && options.keySecret>=startScan) options.keySecret -= length;
 			if (options.thingId!=NULL && options.thingId>=startScan) options.thingId -= length;
 			if (options.type!=NULL && options.type>=startScan) options.type -= length;
+			if (options.apiBasePath!=NULL && options.apiBasePath>=startScan) options.apiBasePath -= length;
 		}
 	}
 	if (options.index+strlen(value)<OPTIONS_BUFFER_LENGTH) {
@@ -541,6 +547,7 @@ int ViziblesArduino::parseOption (
 		else if (copyValueTo == &options.keySecret) LOG(F("&options.keySecret"));
 		else if (copyValueTo == &options.thingId) LOG(F("&options.thingId"));
 		else if (copyValueTo == &options.type) LOG(F("&options.type"));
+		else if (copyValueTo == &options.apiBasePath) LOG(F("&apiBasePath"));
 		else LOG(F("UNKNOWN OPTION"));
 		#endif	
 		LOGLN(F(")"));*/
@@ -578,6 +585,7 @@ int ViziblesArduino::setDefaultOption (
 	else if (copyValueTo == &options.keySecret) LOG(F("&options.keySecret"));
 	else if (copyValueTo == &options.thingId) LOG(F("&options.thingId"));
 	else if (copyValueTo == &options.type) LOG(F("&options.type"));
+	else if (copyValueTo == &options.apiBasePath) LOG(F("&apiBasePath"));
 	else ERR(F("UNKNOWN OPTION"));
 #endif	
 	LOGLN(F(")"));
@@ -623,7 +631,8 @@ void ViziblesArduino::option(
 				if (parseOption (name, value, (const __FlashStringHelper *) optionsId, &options.id)==-1)
 					if (parseOption (name, value, (const __FlashStringHelper *) optionsKeyId, &options.keyID)==-1)
 						if (parseOption (name, value, (const __FlashStringHelper *) optionsKeySecret, &options.keySecret)==-1)
-							if (parseOption (name, value, (const __FlashStringHelper *) optionsType, &options.type)==-1);
+							if (parseOption (name, value, (const __FlashStringHelper *) optionsType, &options.type)==-1)
+								if (parseOption (name, value, (const __FlashStringHelper *) optionsApiBase, &options.apiBasePath)==-1);
 }
 
 /** 
@@ -776,8 +785,11 @@ int ViziblesArduino::connectToVizibles (void) {
 		LOGLN(F(")"));
 		if ((mainClient)->connect(options.hostname, options.port)) {
 			LOGLN(F("connectToVizibles(): Socket opened, preparing headers for websocket"));
-			webSocketClient.path = "/thing";
-			char *path = webSocketClient.path;
+			int pathLen = options.apiBasePath==NULL?7:strlen(options.apiBasePath)+7;
+			char path[pathLen];
+			if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
+			strcpy(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)],"/thing");
+			webSocketClient.path=path;
 			//Create authorization headers
 			unsigned int keyIDLen = strlen(options.keyID);
 			unsigned int idLen = strlen(options.id);
@@ -830,6 +842,7 @@ int ViziblesArduino::connectToVizibles (void) {
 			}
 		} else {
 			ERRLN(F("[VSC] connectToVizibles() error: Socket connection failed."));
+			
 			return -1;
 		}
 	}	

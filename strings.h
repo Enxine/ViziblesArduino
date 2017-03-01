@@ -67,6 +67,7 @@ const char optionsId[] PROGMEM = { "id" };
 const char optionsKeyId[] PROGMEM = { "keyID" };
 const char optionsKeySecret[] PROGMEM = { "keySecret" };
 const char optionsType[] PROGMEM = { "type" };
+const char optionsApiBase[] PROGMEM = { "apiBasePath" };
 const char optionsProtocolHttp[] PROGMEM = { "http" };
 const char optionsProtocolWss[] PROGMEM = { "wss" };
 const char optionsProtocolWs[] PROGMEM = { "ws" };

@@ -107,6 +107,7 @@ typedef struct tOptions {
 	char *keySecret;
 	char *thingId;
 	char *type;
+	char *apiBasePath;
 	unsigned int port;
 	unsigned int pingRetries;
 	double pingDelay;
