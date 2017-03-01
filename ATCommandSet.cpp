@@ -38,7 +38,7 @@ const char ATOK[] PROGMEM = "OK";
 const char ATError[] PROGMEM = "ERROR";
 const char ATEndLine[] PROGMEM = "\r\n";
 const char optionProtocol[] PROGMEM = "protocol";
-#if defined ESP8266
+#if defined ESP8266 && defined VZ_SECURE_AT_CLIENT
 const char optionProtocolDefault[] PROGMEM = "wss";
 #else	
 const char optionProtocolDefault[] PROGMEM = "ws";

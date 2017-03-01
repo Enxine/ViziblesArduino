@@ -26,7 +26,7 @@
 #define MAX_LINE_SIZE 254
 
 // Create WiFi and HTTP clients over which the Vizibles library will work
-#if defined ESP8266
+#if defined ESP8266 && defined VZ_SECURE_AT_CLIENT
 WiFiClientSecure wc;
 #else
 WiFiClient wc;
