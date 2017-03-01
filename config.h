@@ -1,8 +1,9 @@
 //Edit this file if you want to tweak available functions within the library to optimize code size for your application
 #ifndef _vz_config_h
 #define _vz_config_h
-//Uncomment the following line to have debug output in the serial port
-//#define VZ_CLOUD_DEBUG
+//Uncomment the following lines to have debug output over serial port
+#define VZ_CLOUD_DEBUG
+#define VZ_CLOUD_ERR
 //Uncoment the following line to allow function execution and exposition to the cloud and to the local things if HTTP service is activated
 #define VZ_EXECUTE_FUNCTIONS
 //Uncoment the following line to include the possibility of local HTTP service for receiving data from cloud or from other things
