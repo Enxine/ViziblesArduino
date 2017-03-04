@@ -72,7 +72,7 @@ double ViziblesArduino::lastWiFiConnection = 0;									/*!< Last WiFi connectio
 unsigned char ViziblesArduino::cloudConnected = 0;									/*!< Connection flag. Zero if not connected to the cloud or one if connected.*/
 unsigned char ViziblesArduino::tryToConnect = 0;                                   /*!< Try to connect flag. Zero if must remain unconnected to the cloud or one if must try to connect.*/
 #ifdef VZ_WEBSOCKETS
-WebSocketClient ViziblesArduino::webSocketClient;									/*!< Main websocket client.*/
+//WebSocketClient ViziblesArduino::webSocketClient;									/*!< Main websocket client.*/
 int ViziblesArduino::lastWebsocketRead = 0; 										/*!< Last websocket read try time.*/
 pendingAck_t ViziblesArduino::pendingAcks[MAX_PENDING_ACKS];						/*!< Array of pending message acknowledgements.*/
 unsigned int ViziblesArduino::lastSequenceNumber;									/*!< Last message sequence number used.*/
@@ -92,6 +92,7 @@ ViziblesArduino::ViziblesArduino(Client& client, Client& client1) {
 	instance = this;
 #endif /*VZ_HTTP_SERVER*/
 #ifdef VZ_WEBSOCKETS
+	webSocketClient = NULL;
 	lastSequenceNumber = 0;
 	for(int i = 0; i < MAX_PENDING_ACKS; i++) pendingAcks[i].pending = 0;
 #endif
@@ -179,7 +180,7 @@ int ViziblesArduino::sendPing (void) {
  *	@return nothing
  */
 void ViziblesArduino::confirmConnectionStatusOK(void) {
-	//LOGLN(F("[VSC] confirmConnectionStatusOK()"));	
+	LOGLNLVL(F("[VSC] confirmConnectionStatusOK()"), 3);	
 #ifdef VZ_HTTP
 	if (!strcmp_P(options.protocol, optionsProtocolHttp)) pingRetries = options.pingRetries;
 #endif	
@@ -196,7 +197,7 @@ void ViziblesArduino::confirmConnectionStatusOK(void) {
  *	@return nothing
  */
 void ViziblesArduino::confirmConnectionStatusERROR(void) {
-	ERRLN(F("[VSC] confirmConnectionStatusERROR()"));
+	ERRLNLVL(F("[VSC] confirmConnectionStatusERROR()"),2);
 	if (cloudConnected && options.onDisconnectCallback != NULL) options.onDisconnectCallback(); 
 	cloudConnected = 0;
 #ifdef VZ_WEBSOCKETS
@@ -650,7 +651,7 @@ int ViziblesArduino::disconnect(void) {
 	if (ws && cloudConnected) {
 		cloudConnected = 0;
 		if (options.onDisconnectCallback != NULL) options.onDisconnectCallback();
-		webSocketClient.disconnect();
+		if (webSocketClient!=NULL) webSocketClient->disconnect();
 	}	
 #endif /*VZ_WEBSOCKETS*/ 
 #ifdef VZ_HTTP
@@ -785,12 +786,12 @@ int ViziblesArduino::connectToVizibles (void) {
 		LOGLN(F(")"));
 		if ((mainClient)->connect(options.hostname, options.port)) {
 			LOGLN(F("connectToVizibles(): Socket opened, preparing headers for websocket"));
-			int pathLen = options.apiBasePath==NULL?7:strlen(options.apiBasePath)+7;
-			char path[pathLen];
-			if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
-			strcpy(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)],"/thing");
-			webSocketClient.path=path;
-			//Create authorization headers
+			//TODO: Change main server code to use [ApiBasePath]/thing instead of hardcoded /thing
+			//int pathLen = options.apiBasePath==NULL?7:strlen(options.apiBasePath)+7;
+			//char path[pathLen];
+			//if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
+			//strcpy(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)],"/thing");
+			char *path = "/thing";
 			unsigned int keyIDLen = strlen(options.keyID);
 			unsigned int idLen = strlen(options.id);
 			unsigned int typeIdLen = 0;
@@ -825,19 +826,27 @@ int ViziblesArduino::connectToVizibles (void) {
 				createHashSignature(&headerAuthorization[24 + keyIDLen + 1], options.keySecret, NULL, _ws, options.hostname, options.port, path, NULL, &headerAuthorization[27 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64], &headerAuthorization[37 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen], NULL); 
 				headerAuthorization[25 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + 1] = ':';
 				headerAuthorization[27 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen] = '\n';
-			}	
+			}
+
 			// Handshake with the server
 			char host[strlen(options.hostname) + 7];
 			strcpy(host, options.hostname);
 			host[strlen(options.hostname)] = ':';
 			itoa(options.port, &host[strlen(options.hostname)+1], 10);
-			webSocketClient.host = host;
-			webSocketClient.headers = headerAuthorization;
+			if(webSocketClient==NULL) webSocketClient = new WebSocketClient(path, host, headerAuthorization);
+			else {
+				webSocketClient->setHost(host);
+				webSocketClient->setHeaders(headerAuthorization);
+				webSocketClient->setPath(path);
+				webSocketClient->setProtocol(NULL);
+			}
 			LOGLN(F("connectToVizibles(): Creating websocket"));
-			if (webSocketClient.handshake(*mainClient)) {
+			int err = 0;
+			if (webSocketClient!=NULL && 101 == (err = webSocketClient->handshake(*mainClient))){;
 				cloudConnected = 1;
 			} else {
-				ERRLN(F("[VSC] connectToVizibles() error: Websocket creation failed."));
+				ERR(F("[VSC] connectToVizibles() error: Websocket creation failed with error "));
+				ERRLN(err);
 				return -1;
 			}
 		} else {
@@ -1100,18 +1109,19 @@ int ViziblesArduino::WSSendData (
 			if (err) return err;
 		}
 	}	
-	if (cloudConnected && webSocketClient.connected()) {
+	if (cloudConnected && webSocketClient!=NULL && webSocketClient->connected()) {
 		setNewPendingAck(cb, lastSequenceNumber++);
-		webSocketClient.sendData(payload, 1);
+		webSocketClient->sendData(payload, 1);
 		return 0;
 	} else {
 		ERR(F("[VSC] WSSendData() error: Not connected to cloud."));
 		ERR(F(" cloudConnected: "));
 		ERR(cloudConnected);
-		ERR(F(", webSocketClient.connected(): "));
-		ERR(webSocketClient.connected());
-		ERRLN();
-		
+		if(webSocketClient!=NULL){
+			ERR(F(", webSocketClient.connected(): "));
+			ERR(webSocketClient->connected());
+			ERRLN();
+		} else ERRLN(F("webSocketClient=NULL"));
 		confirmConnectionStatusERROR();
 		return -1;	
 	}
@@ -1339,7 +1349,7 @@ void ViziblesArduino::invalidatePendingAcks(void) {
  */
 int ViziblesArduino::processWebsocket(void) {
 	//LOGLN(F("[VSC] processWebsocket()"));
-	while (mainClient->available() && 1) {
+	while (mainClient->available() && webSocketClient!=NULL && 1) {
 #ifdef ESP8266
 		ESP.wdtFeed();
 #endif		
@@ -1347,7 +1357,7 @@ int ViziblesArduino::processWebsocket(void) {
 		char data[1024];
 		char opCode;
 		//LOGLN(F("[VSC] processWebsocket(): Reading data"));
-		webSocketClient.getData(data, 1024, (uint8_t *)&opCode);
+		webSocketClient->getData(data, 1024, (uint8_t *)&opCode);
 		opCode = opCode & 0x0F;
 		//LOGLN(data);
 		/*              if (opCode!=3 &&opCode!=12 && opCode!=0 && opCode!=9 && opCode!=1 && opCode!=8) {
@@ -1360,7 +1370,7 @@ int ViziblesArduino::processWebsocket(void) {
 				} */
 		if (opCode == 9) { //Ping received
 			LOGLN(F("[VSC] processWebsocket(): Ping received"));
-			webSocketClient.sendData("", 0x80 | 10); //Send Pong
+			webSocketClient->sendData("", 0x80 | 10); //Send Pong
 			confirmConnectionStatusOK();
 		} else if (opCode == 8) { //Connection close asked by server
 			ERRLN(F("[VSC] processWebsocket():  Connection close request received"));
@@ -1480,7 +1490,7 @@ int ViziblesArduino::processWebsocket(void) {
 		}
 	}
 #ifdef WS_BUFFERED_SEND
-	webSocketClient.process();
+	if(webSocketClient!=NULL) webSocketClient->process();
 #endif	
 	return 0;
 }
@@ -1974,12 +1984,12 @@ void ViziblesArduino::listen ( void ) {
  */
 void ViziblesArduino::process ( 
 				    Client *client /*!< [in] Pointer to a client pending to be serviced.*/) {
-	//LOGLN("process()");	
+	LOGLNLVL(F("process()"), 3);	
 #ifdef VZ_HTTP_SERVER
 	configureWiFi();
 	if (serverReady && client) {
 		printTimeCreateVariables();
-		//Serial.println(F("[VSC] process(). client request"));
+		LOGLNLVL(F("[VSC] process(). client request"), 3);
 		double t = millis();
 		while (!client->available() && elapsedMillis(t) < 5000) delay (1); //Wait for client to send message
 		if (client->available()) { //Process client request
@@ -1994,7 +2004,7 @@ void ViziblesArduino::process (
 #ifdef VZ_WEBSOCKETS
 		if (ws) {
 			if (tryToConnect && !mainClient->connected()) {
-				ERRLN(F("[VSC] ERROR: mainClient NOT connected!"));
+				ERRLNLVL(F("[VSC] ERROR: mainClient NOT connected!"), 2);
 				confirmConnectionStatusERROR();
 			}
 			else {
@@ -2020,7 +2030,7 @@ void ViziblesArduino::process (
 					lastPing = millis();
 					pingRetries--;
 					if (pingRetries==0) {
-						ERRLN(F("[VSC] pingRetries == 0 => confirmConnectionStatusERROR()"));
+						ERRLNLVL(F("[VSC] pingRetries == 0 => confirmConnectionStatusERROR()"), 2);
 						confirmConnectionStatusERROR();
 					}
 				} else {
@@ -2036,13 +2046,13 @@ void ViziblesArduino::process (
 			lastWiFiConnection = millis();
 			if (isApActive()) disableWiFiAp();
 			
-			//LOG(F("Calling connectToVizibles() because cloudConnected = "));
-			//LOGLN(cloudConnected);
+			LOGLVL(F("Calling connectToVizibles() because cloudConnected = "), 3);
+			LOGLNLVL(cloudConnected, 3);
 			
 			if (connectToVizibles()) {
-				ERRLN(F("[VSC] Connection failed."));
+				ERRLNLVL(F("[VSC] Connection failed."), 2);
 			} else {
-				LOGLN(F("Connection established OK"));
+				LOGLNLVL(F("Connection established OK"), 2);
 			}	
 			lastConnection = millis();
 		} else {

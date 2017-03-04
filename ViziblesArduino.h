@@ -32,21 +32,27 @@
 #endif
 
 #ifdef VZ_CLOUD_ERR
-#define ERR(message) Serial.print(message)
-#define ERRLN(message) Serial.println(message)
+#define VZ_CLOUD_ERR_TEST 1
 #else
-#define ERR(message)
-#define ERRLN(message)
+#define VZ_CLOUD_ERR_TEST 0
 #endif /*VZ_CLOUD_ERR*/
+#define ERR(message) do{if(VZ_CLOUD_ERR_TEST) Serial.print(message);} while(0)
+#define ERRLN(message) do{if(VZ_CLOUD_ERR_TEST) Serial.println(message);} while(0)
 
 #ifdef VZ_CLOUD_DEBUG
-#define LOG(message) Serial.print(message)
-#define LOGLN(message) Serial.println(message)
+#define VZ_CLOUD_DEBUG_TEST 1
 #else
-#define LOG(message)
-#define LOGLN(message)
-#endif /*VZ_CLOUD_DEBUG*/
+#define VZ_CLOUD_DEBUG_TEST 0
+#endif	/*VZ_CLOUD_DEBUG*/
+#define LOG(message) do{if(VZ_CLOUD_DEBUG_TEST) Serial.print(message);} while(0)
+#define LOGLN(message) do{if(VZ_CLOUD_DEBUG_TEST) Serial.println(message);} while(0)
 
+	
+#define LOGLVL(message, level) do{if(VZ_CLOUD_DEBUG_TEST && level<=VZ_DEBUG_LEVEL) Serial.print(message);} while(0)
+#define LOGLNLVL(message, level) do{if(VZ_CLOUD_DEBUG_TEST && level<=VZ_DEBUG_LEVEL) Serial.println(message);} while(0)
+#define ERRLVL(message, level) do{if(VZ_CLOUD_ERR_TEST && level<=VZ_DEBUG_LEVEL) Serial.print(message);} while(0)
+#define ERRLNLVL(message, level) do{if(VZ_CLOUD_ERR_TEST && level<=VZ_DEBUG_LEVEL) Serial.println(message);} while(0)
+	
 //One day (in seconds) for time synchronization period
 #define SYNCHRONIZATION_PERIOD 			86400
 
@@ -240,7 +246,7 @@ class ViziblesArduino {
 	static unsigned char tryToConnect;
 	static HttpClient *httpClient;			
 #ifdef VZ_WEBSOCKETS
-	static WebSocketClient webSocketClient;
+	WebSocketClient* webSocketClient;
 	static int lastWebsocketRead; 
 	static pendingAck_t pendingAcks[MAX_PENDING_ACKS];
 	static unsigned int lastSequenceNumber;
