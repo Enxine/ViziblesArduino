@@ -12,7 +12,7 @@
 //Uncoment the following line to include the possibility of local ITTT rule execution 
 #define VZ_ITTT_RULES
 //Uncoment the line below to enable HTTP connection with Vizibles platform 
-#define VZ_HTTP
+//#define VZ_HTTP
 //Uncoment the line below to enable Websocket connection with Vizibles platform
 #define VZ_WEBSOCKETS
 
