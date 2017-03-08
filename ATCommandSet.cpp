@@ -27,6 +27,8 @@ AT+EXPOSE="lightOn"
 AT+DISCONNECT
 */
 
+const char ATVersion[] PROGMEM = "=Vizibles AT v1.1-20170803 ";
+const char ATVers[] PROGMEM = "AT+GMR";
 const char ATConnect[] PROGMEM = "AT+CONNECT";
 const char ATUpdate[] PROGMEM = "AT+UPDATE";
 const char ATExpose[] PROGMEM = "AT+EXPOSE";
@@ -34,6 +36,8 @@ const char ATDisconnect[] PROGMEM = "AT+DISCONNECT";
 const char ATOption[] PROGMEM = "AT+SETOPTIONS";
 const char ATWifiConnect[] PROGMEM = "AT+WIFICONNECT";
 const char ATGetMAC[] PROGMEM = "AT+GETMAC";
+const char ATGetIP[] PROGMEM = "AT+GETIP";
+const char ATReset[] PROGMEM = "AT+RST";
 const char ATOK[] PROGMEM = "OK";
 const char ATError[] PROGMEM = "ERROR";
 const char ATEndLine[] PROGMEM = "\r\n";
@@ -175,12 +179,16 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 				else SerialPrintln_P(ATError);
 			}
 		}
-	} else if(!strncmp_P(line, ATGetMAC, strlen_P(ATGetMAC))) { //AT+GETMAC\r\n%
+	} else if(!strncmp_P(line, ATGetMAC, strlen_P(ATGetMAC))) { //AT+GETMAC\r\n
 		char mac[18];
 		getLocalMac(mac);
 		Serial.print(F("+MAC="));
 		Serial.println(mac);
-		///SerialPrintln_P(ATOK);
+	} else if(!strncmp_P(line, ATGetIP, strlen_P(ATGetIP))) { //AT+GETIP\r\n
+		char ip[16];
+		getLocalIp(ip);
+		Serial.print(F("+IP="));
+		Serial.println(ip);
 	} else if(!strncmp_P(line, ATUpdate, strlen_P(ATUpdate))) { //AT+UPDATE="<variable name>","<variable value>"[,...]\r\n
 		SerialPrintln_P(ATUpdate);
 		int n = 0;
@@ -256,6 +264,18 @@ void parseATCommand(ViziblesArduino& cloud, char *line) {
 				SerialPrintln_P(ATOK);
 			}
 		}
+	} else if (!strncmp_P(line, ATVers, strlen_P(ATVers))) { //AT+GMR\r\n
+		SerialPrint_P(ATVers);
+		SerialPrint_P(ATVersion);
+		SerialPrintln_P(ATOK);
+	} else if (!strncmp_P(line, ATReset, strlen_P(ATReset))) { //AT+RST\r\n
+#ifdef ESP8266
+		SerialPrintln_P(ATReset);
+		SerialPrintln_P(ATOK);
+		ESP.restart();
+#else		
+		SerialPrintln_P(ATError);
+#endif
 	} else {
 		SerialPrintln_P(ATError);
 	}	

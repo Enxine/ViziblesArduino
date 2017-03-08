@@ -42,8 +42,30 @@ Devuelve ```OK``` si tiene éxito o ```ERROR``` si se produce un error. Este com
 
 Devuelve la dirección MAC de la interfaz WiFi. Se utiliza principalmente para que el firmware pueda distinguir unos módulos de otros, y que así pueda crear Thing IDs distintos. La respuesta tendrá la forma ```+MAC=FF:FF:FF:FF:FF:FF``` o no devolverá nada en caso de error.
 
+####```AT+GETIP\r\n```
+
+Devuelve la dirección IP de la interfaz WiFi una vez conectado a una red. La respuesta tendrá la forma ```+IP=XXX.XXX.XXX.XXX``` o no devolverá nada en caso de error.
+
+####```AT+GMR\r\n```
+
+Devuelve la versión del firmware que se está ejecutando. En nuestro caso el resultado siempre contendrá ```Vizibles AT```, un número de versión y una fecha. Existen otras versiones de firmware para los módulos ESP8266 que ejecutan comandos AT, pero no relacionados con Vizibles, así que esta es una buena forma de saber si tenemos el firmware correcto en el interfaz WiFi.
+
+####```AT+RST\r\n```
+
+Reinicia el módulo. El resultado obtenido será una cadena de caracteres que el ESP8266 genera durante el arranque y ```VZ-READY>``` al final, para indicar que el módulo está a la espera de nuestras órdenes AT.
+
 ## Drivers para otras arquitecturas
 
 Si planeas utilizar el cliente AT para añadir conectividad con Vizibles a tu proyecto quizás quieras revisar la lista que viene a continuación en la que iremos poniendo enlaces al los drivers para otras arquitecturas que vayamos creando.
 
 * [Arduino](https://github.com/Enxine/ViziblesArduinoAT)
+
+## Lista de cambios
+
+* V 1.1
+
+Añadidos los comandos AT+GMR, AT+RST, y AT+GETIP.
+
+Resuelto un problema que hacía que AT+CONNECT no funcionase sin parámetros.
+
+Mejorado cliente de Websockets para acelerar la conexión.

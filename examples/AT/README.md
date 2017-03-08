@@ -42,8 +42,30 @@ Returns ```OK``` on success or ```ERROR``` on error. This command also returns `
 
 Returns the MAC address of the WiFi interface. Mainly used for differentiating among different modules for the Thigh ID name. Returns the MAC address on the format ```+MAC=FF:FF:FF:FF:FF:FF``` or nothing if any error happens.
 
+####```AT+GETIP\r\n```
+
+Returns the MAC address of the WiFi interface once connected to a network. Returns the IP address on the format ```+IP=XXX.XXX.XXX.XXX``` or nothing if any error happens.
+
+####```AT+GMR\r\n```
+
+Returns firmware version running on the module. In our case the result will always include the words ```Vizibles AT```, a version number, and a date. It does exist multiple other versions of firmware for the ESP8266 modules with AT command interfaces, but not related with Vizibles, so this is a good way to know if we flashed the right version.
+
+####```AT+RST\r\n```
+
+Reset the module. The result is the boot sequence of the ESP8266 followed by ```VZ-READY>``` which tells us module is ready to receive our AT commands.
+
 ## Drivers for other platforms
 
 If you plan to use this AT client to add Vizibles connectivity to your project, you might want to check the following list, with links to the drivers for using the AT client in other platforms.
 
 * [Arduino](https://github.com/Enxine/ViziblesArduinoAT)
+
+## Changelog
+
+* V 1.1
+
+Added AT+GMR, AT+RST, and AT+GETIP commands.
+
+Resolved a problem causing AT+CONNECT without parameters to fail on previous versions.
+
+Websocket client enhanced to speed up connection.
