@@ -43,8 +43,6 @@ const char dateHeaderName[] = "VZ-Date";
 //Internal variables
 unsigned long ViziblesArduino::lastSync = 0; 										/*!< Time when time was updated last time.*/
 tOptions ViziblesArduino::options;													/*!< Main configuration options.*/
-HttpClient *ViziblesArduino::httpClient;											/*!< HTTP client used in all outgoing communications.*/
-Client *ViziblesArduino::mainClient = NULL;                                        /*!< Network client used in all outgoing communications.*/
 #ifdef VZ_EXECUTE_FUNCTIONS
 functions_t ViziblesArduino::functions[MAX_EXPOSED_FUNCTIONS]; 					/*!< Functions available for remote calls.*/
 unsigned char ViziblesArduino::exposed = 0;										/*!< Number of functions available for remote calls.*/
@@ -197,7 +195,7 @@ void ViziblesArduino::confirmConnectionStatusOK(void) {
  *	@return nothing
  */
 void ViziblesArduino::confirmConnectionStatusERROR(void) {
-	ERRLNLVL(F("[VSC] confirmConnectionStatusERROR()"),2);
+	ERRLNLVL(F("[VSC] confirmConnectionStatusERROR()"),1);
 	if (cloudConnected && options.onDisconnectCallback != NULL) options.onDisconnectCallback(); 
 	cloudConnected = 0;
 #ifdef VZ_WEBSOCKETS
@@ -644,6 +642,7 @@ void ViziblesArduino::option(
  *	@return zero if everything is ok or a negative error code if not
  */
 int ViziblesArduino::disconnect(void) {
+	LOGLN(F("disconnect()"));
 	tryToConnect = 0;
 	if (!cloudConnected) return -1;
 	int ws = strcmp_P(options.protocol, optionsProtocolHttp);
@@ -1306,7 +1305,7 @@ void ViziblesArduino::confirmPendingAck(
  *	@return nothing
  */
 void ViziblesArduino::processPendingAcks(void) {
-	//LOGLN(F("processPendingAcks()"));	
+	LOGLNLVL(F("processPendingAcks()"), 2);	
 	for(int i = 0; i < MAX_PENDING_ACKS; i++) {
 		if (pendingAcks[i].pending && elapsedMillis(pendingAcks[i].time) > options.ackTimeout) {
 			ERR(F("[VSC] processPendingAcks() error: ACK not received for message "));
@@ -1348,7 +1347,7 @@ void ViziblesArduino::invalidatePendingAcks(void) {
  *	@return zero if everyting is ok or a negative error code if not
  */
 int ViziblesArduino::processWebsocket(void) {
-	//LOGLN(F("[VSC] processWebsocket()"));
+	LOGLNLVL(F("[VSC] processWebsocket()"), 3);
 	while (mainClient->available() && webSocketClient!=NULL && 1) {
 #ifdef ESP8266
 		ESP.wdtFeed();
@@ -1370,10 +1369,18 @@ int ViziblesArduino::processWebsocket(void) {
 				} */
 		if (opCode == 9) { //Ping received
 			LOGLN(F("[VSC] processWebsocket(): Ping received"));
-			webSocketClient->sendData("", 0x80 | 10); //Send Pong
+			if(webSocketClient!=NULL) webSocketClient->sendData("", 0x80 | 10); //Send Pong
 			confirmConnectionStatusOK();
 		} else if (opCode == 8) { //Connection close asked by server
-			ERRLN(F("[VSC] processWebsocket():  Connection close request received"));
+			ERRLNLVL(F("[VSC] processWebsocket():  Connection close request received"), 0);
+			ERRLVL(F("Received opcode: "), 1);
+			ERRLNLVL((int) opCode,1);
+			if (strlen(data) > 0) {
+				ERRLVL(F("Received data. "), 1);
+				ERRLVL(strlen(data), 1);
+				ERRLVL(F(" Bytes: "), 1);
+				ERRLNLVL(data,1);
+			}
 			confirmConnectionStatusERROR();
 		} else if ((opCode == 1 || opCode == 0) /*&& data.length() > 0*/) {
 			LOGLN(F("[VSC] processWebsocket(): Message received"));
@@ -2003,8 +2010,9 @@ void ViziblesArduino::process (
 		int ws = strcmp_P(options.protocol, optionsProtocolHttp);
 #ifdef VZ_WEBSOCKETS
 		if (ws) {
-			if (tryToConnect && !mainClient->connected()) {
-				ERRLNLVL(F("[VSC] ERROR: mainClient NOT connected!"), 2);
+			//if (tryToConnect && !mainClient->connected()) {
+			if( tryToConnect && (webSocketClient==NULL || (webSocketClient!=NULL && !webSocketClient->connected()))){	
+				ERRLNLVL(F("[VSC] ERROR: mainClient NOT connected!"), 1);
 				confirmConnectionStatusERROR();
 			}
 			else {

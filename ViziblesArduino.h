@@ -224,7 +224,7 @@ class ViziblesArduino {
 	static unsigned long lastSync;
 	static tOptions options;
 	//static HttpClient *httpClient;
-	static Client *mainClient;
+	Client *mainClient;
 #ifdef VZ_EXECUTE_FUNCTIONS
 	static functions_t functions[MAX_EXPOSED_FUNCTIONS];
 	static unsigned char exposed;
@@ -244,7 +244,7 @@ class ViziblesArduino {
 	static double lastWiFiConnection;		
 	static unsigned char cloudConnected;
 	static unsigned char tryToConnect;
-	static HttpClient *httpClient;			
+	HttpClient *httpClient;			
 #ifdef VZ_WEBSOCKETS
 	WebSocketClient* webSocketClient;
 	static int lastWebsocketRead; 
