@@ -7,7 +7,7 @@
 #ifndef _ATCommandSet_h
 #define _ATCommandSet_h
 
-//#define VZ_SECURE_AT_CLIENT
+#define VZ_SECURE_AT_CLIENT
 
 void parseATCommand(ViziblesArduino& cloud, char *line);
 
