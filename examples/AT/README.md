@@ -60,6 +60,8 @@ If you plan to use this AT client to add Vizibles connectivity to your project, 
 
 * [Arduino](https://github.com/Enxine/ViziblesArduinoAT)
 
+* [Espruino](https://github.com/Enxine/EspruinoDocs/blob/master/modules/Vizibles.md) 
+
 ## Changelog
 
 * V 1.1

@@ -60,6 +60,8 @@ Si planeas utilizar el cliente AT para añadir conectividad con Vizibles a tu pr
 
 * [Arduino](https://github.com/Enxine/ViziblesArduinoAT)
 
+* [Espruino](https://github.com/Enxine/EspruinoDocs/blob/master/modules/Vizibles.es.md) 
+
 ## Lista de cambios
 
 * V 1.1
