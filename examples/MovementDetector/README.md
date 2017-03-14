@@ -2,7 +2,7 @@
 
 Read this in other languages: [English](https://github.com/Enxine/ViziblesArduino/blob/master/examples/MovementDetector/README.md), [Español](https://github.com/Enxine/ViziblesArduino/blob/master/examples/MovementDetector/README.es.md)
 
-Whith this sketch you can build your own Internet connected movement detector for using it on your home automation projects. 
+With this sketch you can build your own Internet connected movement detector for using it on your home automation projects. 
 The result is a fully functional PIR (Passive Infrared) sensor with a LED status light that you can remotely activate or deactivate, for example during night periods.  
 
 ![PIR dashboard widgets](images/PIR-Dashboard.png)
