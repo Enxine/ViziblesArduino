@@ -7,7 +7,7 @@ The result is a fully functional PIR (Passive Infrared) sensor with a LED status
 
 ![PIR dashboard widgets](images/PIR-Dashboard.png)
 
-![PIR sensor](images/PIR.jpg)
+![PIR sensor](images/PIR.JPG)
 
 ## Materials
 
