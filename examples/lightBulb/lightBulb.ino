@@ -24,10 +24,10 @@
 
 // API key ID to identificate the key you want to use to authenticate the sensor in the platform
 //IMPORTANT: Use your own API key here to avoid replicated IDs
-const unsigned char apikeyID[] PROGMEM = { "Gp2naLrsSpFE" };
+const unsigned char apikeyID[] PROGMEM = { "YOUR_API_KEY_ID_HERE" };
 // API key to authenticate the sensor in the platform
 //IMPORTANT: Use your own API key here to avoid replicated IDs
-const unsigned char apikey[] PROGMEM = { "wGyFTwIHvYwGCBDJyA7j" };
+const unsigned char apikey[] PROGMEM = { "YOUR_API_KEY_SECRET_HERE" };
 // Thing ID to identify the sensor inside the platform
 const char thingID[] PROGMEM = { "light-bulb" };
 
