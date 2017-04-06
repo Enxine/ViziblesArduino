@@ -10,7 +10,7 @@ Read this in other languages: [English](https://github.com/Enxine/ViziblesArduin
 If you do not have it yet or your Arduino IDE verion is not up to date please follow the links and instructions [here](https://www.arduino.cc/en/main/software) for installing the latest version.
 Once you have the IDE installed you will need to install also the support libraries for the board you will use, if it is not an original Arduino board, as for example, if you are using ESP8266 based boards, like I am doing, you will need to install the libraries for supporting ESP8266 based boards. In the main IDE window go to File, Preferences, and in the Additional Boards Manager URLs text box write ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```
 
-#Installing the libraries
+# Installing the libraries
 
 To make this run you will need to clone or download a copy of the ViziblesArduino library to your Arduino IDE libraries' directory, but you will need to do the same also with these other libraries:
 
@@ -21,7 +21,7 @@ To make this run you will need to clone or download a copy of the ViziblesArduin
 - JSON: [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - Websockets: [https://github.com/pablorodiz/Arduino-Websocket.git](https://github.com/pablorodiz/Arduino-Websocket.git)
 
-#Supported architectures
+# Supported architectures
 
 This driver is a work in progress, so we are currently working on adapting it to new architectures. Vizibles, even it was designed with constrained resources in mind is a demmanding platform with strong security requirements. So the libray is also quite demanding. Currently the Arduino (C++) version of the library is supported on the following architectures:
 - ESP8266 based boards
@@ -29,7 +29,7 @@ This driver is a work in progress, so we are currently working on adapting it to
 
 SSL connections with the platform are only supported on ESP8266 based boards by now, but we are working hard to make it work on Atmel based boards.
 
-#Exploring the examples
+# Exploring the examples
 
 In the examples folder there are some ready to run. Some are specific for the MKR1000 board, but most where writen for the [Espresso Lite 2.0](http://www.espressolite.com/) which is the platform we can recomend by now.
 Main examples are light-bulb and light-switch, that emulate a light and its corresponding switch. 
@@ -152,6 +152,6 @@ And finally, there is an additional task on the main loop. If you are offering a
 		client.process(&c);
 	} else client.process(NULL);
 ```
-#Configuring the library
+# Configuring the library
 
 There are some compile time configuration options in the library, mainly for shrinking code size and/or increasing debug level. You will find all available options together on the file ```config.h```.
