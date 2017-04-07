@@ -782,7 +782,9 @@ int testITTTRules(
 		}
 		i++;
 	}
-	strncpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd, strlen(itttMetaEnd)); 
+	int j = strlen_P(itttMetaEnd);
+	strncpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd, j);
+	meta[44 + ((count-2) * 15) + j] = '\0';
 	return count;
 }
 
