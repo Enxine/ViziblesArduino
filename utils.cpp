@@ -612,8 +612,10 @@ void createHashSignature(
  */
 void getDateString(
 		   char *UTCTime /*!< [out] Pointer to the buffer where UTC time string will be stored (fixed length, 30 bytes).*/){
-	LOGLN(F("getDateString(&buffer)"));	
-	strcpy_P(UTCTime, UTCBase);
+	LOGLN(F("getDateString(&buffer)"));
+	int l = strlen_P(UTCBase);	
+	strncpy_P(UTCTime, UTCBase, l);
+	UTCTime[l] = '\0';
 	char aux[5] = "";
 	strncpy_P(&UTCTime[0], &weekdays[weekday()-1][0], 3);
 	itoa(day(), aux, 10);
