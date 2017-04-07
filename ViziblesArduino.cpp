@@ -41,19 +41,19 @@ const char dateHeaderName[] = "VZ-Date";
 #endif /*VZ_HTTP_SERVER*/
 
 //Internal variables
-unsigned long ViziblesArduino::lastSync = 0; 										/*!< Time when time was updated last time.*/
-tOptions ViziblesArduino::options;													/*!< Main configuration options.*/
+//unsigned long ViziblesArduino::lastSync = 0; 										/*!< Time when time was updated last time.*/
+//tOptions ViziblesArduino::options;													/*!< Main configuration options.*/
 #ifdef VZ_EXECUTE_FUNCTIONS
-functions_t ViziblesArduino::functions[MAX_EXPOSED_FUNCTIONS]; 					/*!< Functions available for remote calls.*/
-unsigned char ViziblesArduino::exposed = 0;										/*!< Number of functions available for remote calls.*/
-char ViziblesArduino::functionNames[MAX_EXPOSED_FUNCTIONS_NAME_BUFFER];
-int ViziblesArduino::functionNamesIndex = 0;
+//functions_t ViziblesArduino::functions[MAX_EXPOSED_FUNCTIONS]; 					/*!< Functions available for remote calls.*/
+//unsigned char ViziblesArduino::exposed = 0;										/*!< Number of functions available for remote calls.*/
+//char ViziblesArduino::functionNames[MAX_EXPOSED_FUNCTIONS_NAME_BUFFER];
+//int ViziblesArduino::functionNamesIndex = 0;
 #endif /*VZ_EXECUTE_FUNCTIONS*/
 #ifdef VZ_HTTP_SERVER
 ViziblesArduino *instance = NULL; 													/*!< Instance of the ViziblesArduino class to allow external access. */
-WebApp *ViziblesArduino::httpService = NULL;                                       /*!< Webserver content manager.*/
-char ViziblesArduino::serverReady = 0;												/*!< Flag to check if server was configured properly.*/
-int ViziblesArduino::pendingWifiConfig = 0;										/*!< Flag to check if there is a pending try to connect to WiFi.*/
+//WebApp *ViziblesArduino::httpService = NULL;                                       /*!< Webserver content manager.*/
+//char ViziblesArduino::serverReady = 0;												/*!< Flag to check if server was configured properly.*/
+//int ViziblesArduino::pendingWifiConfig = 0;										/*!< Flag to check if there is a pending try to connect to WiFi.*/
 char ViziblesArduino::pendingSsid[33];												/*!< SSID for a pending try to connect to WiFi.*/
 char ViziblesArduino::pendingPass[65];												/*!< Password for a pending try to connect to WiFi.*/
 char ViziblesArduino::pendingCfId[41];												/*!< ConfigId for a pending try to connect to WiFi.*/
@@ -64,19 +64,19 @@ char ViziblesArduino::headerDateBuffer[DATE_HEADER_MAX_LENGTH];                 
 char ViziblesArduino::headerAuthorizationBuffer[AUTHORIZATION_HEADER_MAX_LENGTH];	/*!< Buffer to store Authorization header content on received HTTP requests.*/
 char ViziblesArduino::headerContentTypeBuffer[CONTENT_TYPE_HEADER_MAX_LENGTH];     /*!< Buffer to store Content-type header content on received HTTP requests.*/
 #endif /*VZ_HTTP_SERVER*/
-double ViziblesArduino::lastPing;													/*!< Last ping try time.*/
-double ViziblesArduino::lastConnection;											/*!< Last connection try time.*/
-double ViziblesArduino::lastWiFiConnection = 0;									/*!< Last WiFi connection try time.*/
-unsigned char ViziblesArduino::cloudConnected = 0;									/*!< Connection flag. Zero if not connected to the cloud or one if connected.*/
-unsigned char ViziblesArduino::tryToConnect = 0;                                   /*!< Try to connect flag. Zero if must remain unconnected to the cloud or one if must try to connect.*/
+//double ViziblesArduino::lastPing;													/*!< Last ping try time.*/
+//double ViziblesArduino::lastConnection;											/*!< Last connection try time.*/
+//double ViziblesArduino::lastWiFiConnection = 0;									/*!< Last WiFi connection try time.*/
+//unsigned char ViziblesArduino::cloudConnected = 0;									/*!< Connection flag. Zero if not connected to the cloud or one if connected.*/
+//unsigned char ViziblesArduino::tryToConnect = 0;                                   /*!< Try to connect flag. Zero if must remain unconnected to the cloud or one if must try to connect.*/
 #ifdef VZ_WEBSOCKETS
 //WebSocketClient ViziblesArduino::webSocketClient;									/*!< Main websocket client.*/
-int ViziblesArduino::lastWebsocketRead = 0; 										/*!< Last websocket read try time.*/
-pendingAck_t ViziblesArduino::pendingAcks[MAX_PENDING_ACKS];						/*!< Array of pending message acknowledgements.*/
-unsigned int ViziblesArduino::lastSequenceNumber;									/*!< Last message sequence number used.*/
+//int ViziblesArduino::lastWebsocketRead = 0; 										/*!< Last websocket read try time.*/
+//pendingAck_t ViziblesArduino::pendingAcks[MAX_PENDING_ACKS];						/*!< Array of pending message acknowledgements.*/
+//unsigned int ViziblesArduino::lastSequenceNumber;									/*!< Last message sequence number used.*/
 #endif /*VZ_WEBSOCKETS*/
 #ifdef VZ_HTTP
-int ViziblesArduino::pingRetries;													/*!< Number of ping retries still left.*/
+//int ViziblesArduino::pingRetries;													/*!< Number of ping retries still left.*/
 #endif /*VZ_HTTP*/
 
 /** 
@@ -85,15 +85,31 @@ int ViziblesArduino::pingRetries;													/*!< Number of ping retries still 
 ViziblesArduino::ViziblesArduino(Client& client, Client& client1) {
 	mainClient = &client;
 	httpClient = new HttpClient(client1);
+	lastSync = 0;
+	lastWiFiConnection = 0;
+	cloudConnected = 0;
+	tryToConnect = 0;
+#ifdef VZ_EXECUTE_FUNCTIONS
+	exposed = 0;
+	for(int i = 0; i < MAX_EXPOSED_FUNCTIONS; i++) {
+		functions[i].functionId = NULL;
+		functions[i].handler = NULL;
+	}
+	functionNamesIndex = 0;
+	functionNames[0] = '\0';
+#endif /*VZ_EXECUTE_FUNCTIONS*/
 #ifdef VZ_HTTP_SERVER
 	httpService = new WebApp();
 	instance = this;
+	serverReady = 0;												
+	pendingWifiConfig = 0;										
 #endif /*VZ_HTTP_SERVER*/
 #ifdef VZ_WEBSOCKETS
 	webSocketClient = NULL;
+	lastWebsocketRead = 0;
 	lastSequenceNumber = 0;
 	for(int i = 0; i < MAX_PENDING_ACKS; i++) pendingAcks[i].pending = 0;
-#endif
+#endif /*VZ_WEBSOCKETS*/
 	initializeOptions();
 }
 #ifdef VZ_HTTP_SERVER
