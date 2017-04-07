@@ -135,8 +135,9 @@ int ViziblesArduino::syncTime(void) {
 	char path[pathLen];
 	if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
 	strncpy_P(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)], timeUrl, strlen_P(timeUrl));
+	path[pathLen]='\0';
 	char response[22];
-	if (!(err = HTTPRequest(httpClient, options.hostname, !strcmp_P(options.protocol, optionsProtocolWss)?DEFAULT_VIZIBLES_HTTP_PORT:options.port, path, HTTP_METHOD_GET, NULL, NULL, NULL, response, 22))) {
+	if (!(err = HTTPFastRequest(httpClient, options.hostname, !strcmp_P(options.protocol, optionsProtocolWss)?DEFAULT_VIZIBLES_HTTP_PORT:options.port, path, HTTP_METHOD_GET, NULL, NULL, NULL, response, 22))) {
 		if (strlen(response)==21) {
 			response[19] = '\0';
 			unsigned long now = atol(&response[9]);
