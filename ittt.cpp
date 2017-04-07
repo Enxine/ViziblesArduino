@@ -613,7 +613,7 @@ int addITTTTickets(
 				//Create key from API key secret and add some bytes to complete 32
 				char key_[33];
 				strcpy(key_, key);
-				strcpy_P(&key_[20], itttKeyAddition);
+				strncpy_P(&key_[20], itttKeyAddition, strlen_P(itttKeyAddition));
 				//Decrypt ticket
 				aes256_context ctxt;
 				aes256_init(&ctxt, (uint8_t *) key_);
@@ -695,19 +695,19 @@ int executeFunction (
 	//Get url path
 	int pathLen = 5 + strlen(fun); 
 	char path[pathLen];
-	strcpy_P(path, itttPath);
+	strncpy_P(path, itttPath, strlen_P(itttPath));
 	strcpy(&path[4], fun);
 	//Create content type header
 	convertFlashStringToMemString(contentType, headerContentType);
 	//Create date header
 	char headerDate[36];
-	strcpy_P(headerDate, date);
+	strncpy_P(headerDate, date, strlen(date));
 	getDateString(&headerDate[6]); 
 	//Create hash signature.
 	//Serial.println(id);
 	unsigned int idLen = strlen(id);
 	char headerAuthorization[56+idLen];
-	strcpy_P(headerAuthorization, authorization);
+	strncpy_P(headerAuthorization, authorization, strlen_P(authorization));
 	strcpy(&headerAuthorization[24], id);
 	headerAuthorization[24 + idLen] = ':';    	
 	convertFlashStringToMemString(itttMethodPost, _post);
@@ -733,7 +733,7 @@ int testITTTRules(
                   ViziblesArduino *client	/*!< [in] Client object to be able to execute local functions.*/) {
 	if(thingIdForITTT==NULL || httpClientForITTT==NULL) return 0;
 	int i = 0;
-	strcpy_P(meta, itttMetaStart);
+	strncpy_P(meta, itttMetaStart, strlen_P(itttMetaStart));
 	int rules = itttGetNumberOfActiveRules(); 
 	int count = 0;
 	while(values[i].name) {
@@ -767,13 +767,13 @@ int testITTTRules(
 						if(!err) { //If function was executed inform the cloud with rule id to avoid repeating the execution
 							count++;
 							if(count==1){
-								strcpy_P(&meta[15], itttMeta_1);
+								strncpy_P(&meta[15], itttMeta_1, strlen_P(itttMeta_1));
 								strcpy(&meta[16], rule.id);
-								strcpy_P(&meta[28], itttMeta_1);
+								strncpy_P(&meta[28], itttMeta_1, strlen_P(itttMeta_1));
 							} else {	
-								strcpy_P(&meta[29 + ((count-2) * 15)], itttMeta_2); 
+								strncpy_P(&meta[29 + ((count-2) * 15)], itttMeta_2, strlen_P(itttMeta_2)); 
 								strcpy(&meta[31 + ((count-2) * 15)], rule.id);
-								strcpy_P(&meta[43 + ((count-2) * 15)], itttMeta_1); 	
+								strncpy_P(&meta[43 + ((count-2) * 15)], itttMeta_1, strlen_P(itttMeta_1)); 	
 							}
 						}
 					}
@@ -782,7 +782,7 @@ int testITTTRules(
 		}
 		i++;
 	}
-	strcpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd); 
+	strncpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd, strlen(itttMetaEnd)); 
 	return count;
 }
 

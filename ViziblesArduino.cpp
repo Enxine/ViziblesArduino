@@ -134,7 +134,7 @@ int ViziblesArduino::syncTime(void) {
 	int pathLen = options.apiBasePath==NULL?strlen_P(timeUrl):strlen(options.apiBasePath)+strlen_P(timeUrl);
 	char path[pathLen];
 	if(options.apiBasePath!=NULL) strcpy(path, options.apiBasePath);
-	strcpy_P(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)],timeUrl);
+	strncpy_P(&path[options.apiBasePath==NULL?0:strlen(options.apiBasePath)], timeUrl, strlen_P(timeUrl));
 	char response[22];
 	if (!(err = HTTPRequest(httpClient, options.hostname, !strcmp_P(options.protocol, optionsProtocolWss)?DEFAULT_VIZIBLES_HTTP_PORT:options.port, path, HTTP_METHOD_GET, NULL, NULL, NULL, response, 22))) {
 		if (strlen(response)==21) {
@@ -260,7 +260,7 @@ void ViziblesArduino::cmdConfig_(
 		}
 		//Send answer to the client
 		char configResponse[58];
-		strcpy_P(configResponse, configWifiResponse);
+		strncpy_P(configResponse, configWifiResponse, strlen_P (configWifiResponse));
 		strcpy(&configResponse[14], pendingCfId);
 		strcpy(&configResponse[54], "'}");
 		convertFlashStringToMemString(contentType, ct);
@@ -798,7 +798,7 @@ int ViziblesArduino::connectToVizibles (void) {
 			char headerAuthorization[93+keyIDLen+idLen+typeIdLen];
 			if (!strcmp_P(options.protocol, optionsProtocolWss)) {
 				LOGLN(F("connectToVizibles(): Creating authorization headers for secure websocket"));
-				strcpy_P(headerAuthorization, authorization);
+				strncpy_P(headerAuthorization, authorization, strlen_P(authorization));
 				strcpy(&headerAuthorization[24], options.keyID);
 				headerAuthorization[36] = ':';    	
 				strcpy(&headerAuthorization[37], options.keySecret);
@@ -810,9 +810,9 @@ int ViziblesArduino::connectToVizibles (void) {
 				}
 			} else {
 				LOGLN(F("connectToVizibles(): Creating authorization headers for normal websocket"));
-				strcpy_P(&headerAuthorization[28 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen], date);
+				strncpy_P(&headerAuthorization[28 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen], date, strlen_P(date));
 				getDateString(&headerAuthorization[37 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64 + idLen + typeIdLen]);
-				strcpy_P(headerAuthorization, authorization);
+				strncpy_P(headerAuthorization, authorization, strlen_P(authorization));
 
 				strcpy(&headerAuthorization[24], options.keyID);
 				headerAuthorization[24 + keyIDLen] = ':';    	
@@ -1163,13 +1163,13 @@ int ViziblesArduino::HTTPSendData (
 	int pathLen = 0;
 	pathLen = strlen_P(Path) + strlen(prim) + 1; 
 	char path[pathLen];
-	strcpy_P(path, Path);
+	strncpy_P(path, Path, strlen_P(Path));
 	strcpy(&path[strlen_P(Path)], prim);
 	//Create content type header
 	convertFlashStringToMemString(contentType, headerContentType);
 	//Create date header
 	char headerDate[39];
-	strcpy_P(headerDate, date);
+	strncpy_P(headerDate, date, strlen_P(date));
 	getDateString(&headerDate[9]); 
 	//Create hash signature.
 	unsigned int keyIDLen = strlen(options.keyID);
@@ -1177,7 +1177,7 @@ int ViziblesArduino::HTTPSendData (
 	unsigned int typeIdLen = 0;
 	if (options.type!=NULL) typeIdLen = strlen(options.type) + 1; 
 	char headerAuthorization[56+keyIDLen+idLen+typeIdLen];
-	strcpy_P(headerAuthorization, authorization);
+	strncpy_P(headerAuthorization, authorization, strlen_P(authorization));
 	strcpy(&headerAuthorization[24], options.keyID);
 	headerAuthorization[24 + keyIDLen] = ':';    	
 	strcpy(&headerAuthorization[27 + keyIDLen + HMAC_SHA1_HASH_LENGTH_CODE64], options.id);
@@ -1766,29 +1766,36 @@ void ViziblesArduino::cmdDo_(
 	//I build the whole response here so it can be sent in only one message instead of using 
 	//aWOT library for doing it, since the library sends it in many TCP packets.
 	char response[iBodyLen+strlen(sBodyLen)+98];
-	int k = 0;
-	strcpy_P(response, doResponse_0);
-	k += strlen_P(doResponse_0);
+	int k = 0, j;
+	j = strlen_P(doResponse_0); 
+	strncpy_P(response, doResponse_0, j);
+	k += j;
 	strcpy(&response[k], sBodyLen);
 	k += strlen(sBodyLen);
-	strcpy_P(&response[k], newLine);
-	k += strlen_P(newLine);
-	strcpy_P(&response[k], newLine);
-	k += strlen_P(newLine);
-	strcpy_P(&response[k], doResponse_2);
-	k += strlen_P(doResponse_2);
+	j = strlen_P(newLine);
+	strncpy_P(&response[k], newLine, j);
+	k += j;
+	strncpy_P(&response[k], newLine, j);
+	k += j;
+	j = strlen_P(doResponse_2);
+	strncpy_P(&response[k], doResponse_2, j);
+	k += j;
 	strcpy(&response[k], f);
 	k += strlen(f);
-	strcpy_P(&response[k], doResponse_3);
-	k += strlen_P(doResponse_3);
+	j = strlen_P(doResponse_3);
+	strncpy_P(&response[k], doResponse_3, j);
+	k += j;
 	if (task!=NULL) strcpy(&response[k], task);
 	k += task==NULL?0:strlen(task);
-	strcpy_P(&response[k], doResponse_4);
-	k += strlen_P(doResponse_4);
-	strcpy_P(&response[k], err?doResponse_6:doResponse_7);
-	k += strlen_P(err?doResponse_6:doResponse_7);
-	strcpy_P(&response[k], doResponse_5);
-	k += strlen_P(doResponse_5);
+	j = strlen_P(doResponse_4);
+	strncpy_P(&response[k], doResponse_4, j);
+	k += j;
+	j = strlen_P(err?doResponse_6:doResponse_7);
+	strncpy_P(&response[k], err?doResponse_6:doResponse_7, j);
+	k += j;
+	j = strlen_P(doResponse_5);
+	strncpy_P(&response[k], doResponse_5, j);
+	k += j;
 	response[k] = '\0';
 	res.write((uint8_t*)response, k);
 	printTimeSpent("HTTP Server send response: \t\t");
