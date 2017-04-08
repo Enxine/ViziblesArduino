@@ -20,10 +20,10 @@
 
 
 //Variables
-static HttpClient *httpClientForITTT = NULL;						/*!< HTTP client used in all outgoing communications.*/
-static char *thingIdForITTT = NULL;									/*!< Thing ID of this thing, need when calling functions in other things.*/ 
-static unsigned char itttRulesBuffer[MAX_ITTT_BUFFER_LENGTH] = ""; 	/*!< Buffer where rules and things information is stored.*/ 
-static unsigned int lastBufferChar = 0;								/*!< Index of the first possition available in the buffer.*/ 
+HttpClient *httpClientForITTT = NULL;						/*!< HTTP client used in all outgoing communications.*/
+char *thingIdForITTT = NULL;									/*!< Thing ID of this thing, need when calling functions in other things.*/ 
+unsigned char itttRulesBuffer[MAX_ITTT_BUFFER_LENGTH] = ""; 	/*!< Buffer where rules and things information is stored.*/ 
+unsigned int lastBufferChar = 0;								/*!< Index of the first possition available in the buffer.*/ 
 
 /** 
  *	@brief Initialize ITTT system.
@@ -37,6 +37,8 @@ void initITTT(
               char *thingId		/*!< [in] Full thing ID of this thing (pointer to char array).*/ ) {
 	httpClientForITTT = http;
 	thingIdForITTT = thingId;
+	lastBufferChar = 0;
+	itttRulesBuffer[0] = '\0';
 }
 
 /** 
@@ -60,6 +62,7 @@ void printBuffer(void) {
  */
 void initITTTRules(void) {
 	lastBufferChar = 0;
+	itttRulesBuffer[0] = '\0';
 }
  
 /** 
@@ -701,8 +704,9 @@ int executeFunction (
 	convertFlashStringToMemString(contentType, headerContentType);
 	//Create date header
 	char headerDate[39];
-	strncpy_P(headerDate, date, strlen(date));
-	getDateString(&headerDate[9]); 
+	int l = strlen_P(date);
+	strncpy_P(headerDate, date, l);
+	getDateString(&headerDate[l]); 
 	//Create hash signature.
 	//Serial.println(id);
 	unsigned int idLen = strlen(id);
@@ -712,7 +716,7 @@ int executeFunction (
 	headerAuthorization[24 + idLen] = ':';    	
 	convertFlashStringToMemString(itttMethodPost, _post);
 	convertFlashStringToMemString(optionsProtocolHttp, _http);
-	createHashSignature(&headerAuthorization[24 + idLen + 1], key, _post, _http, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, headerContentType, NULL, &headerDate[6], payload); 
+	createHashSignature(&headerAuthorization[24 + idLen + 1], key, _post, _http, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, headerContentType, NULL, &headerDate[l], payload); 
 	char *headers[] = { headerDate, headerAuthorization, NULL };
 	return HTTPFastRequest(httpClientForITTT, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, HTTP_METHOD_POST, headerContentType, payload, headers, NULL, 0);
 }
