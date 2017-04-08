@@ -686,10 +686,10 @@ int evaluateCondition(
  */
 int executeFunction (
                      char *fun,		/*!< [in] Name of the function to be executed. */
-                     char *hostname,	/*!< [in] Host name of the thing with the function to be executed.*/
+                     char *hostname,/*!< [in] Host name of the thing with the function to be executed.*/
                      char *key,		/*!< [in] Authorization key for the remote thing.*/
                      char *id,		/*!< [in] Id of the thing requesting the execution.*/ 
-                     char *params[]  /*!< [in] Parameters for the function (NULL terminated array).*/) {
+                     char *params[] /*!< [in] Parameters for the function (NULL terminated array).*/) {
 	//TODO: create payload from params list and a task id	
 	convertFlashStringToMemString(itttPayload, payload);
 	//Get url path
@@ -700,9 +700,9 @@ int executeFunction (
 	//Create content type header
 	convertFlashStringToMemString(contentType, headerContentType);
 	//Create date header
-	char headerDate[36];
+	char headerDate[39];
 	strncpy_P(headerDate, date, strlen(date));
-	getDateString(&headerDate[6]); 
+	getDateString(&headerDate[9]); 
 	//Create hash signature.
 	//Serial.println(id);
 	unsigned int idLen = strlen(id);
@@ -728,8 +728,8 @@ int executeFunction (
  *	@return the number of executed rules.
  */
 int testITTTRules(
-                  keyValuePair values[],			/*!< [in] Array of key-value pairs to check against active rules (NULL terminated).*/
-                  char *meta,						/*!< [in] Buffer to store _Meta parameter content, i.e. list of executed rules.*/
+                  keyValuePair values[],	/*!< [in] Array of key-value pairs to check against active rules (NULL terminated).*/
+                  char *meta,				/*!< [in] Buffer to store _Meta parameter content, i.e. list of executed rules.*/
                   ViziblesArduino *client	/*!< [in] Client object to be able to execute local functions.*/) {
 	if(thingIdForITTT==NULL || httpClientForITTT==NULL) return 0;
 	int i = 0;
