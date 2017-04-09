@@ -8,7 +8,8 @@ Read this in other languages: [English](https://github.com/Enxine/ViziblesArduin
 # Install the Arduino IDE
 
 If you do not have it yet or your Arduino IDE verion is not up to date please follow the links and instructions [here](https://www.arduino.cc/en/main/software) for installing the latest version.
-Once you have the IDE installed you will need to install also the support libraries for the board you will use, if it is not an original Arduino board, as for example, if you are using ESP8266 based boards, like I am doing, you will need to install the libraries for supporting ESP8266 based boards. In the main IDE window go to File, Preferences, and in the Additional Boards Manager URLs text box write ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```
+Once you have the IDE installed you will need to install also the support libraries for the board you will use, if it is not an original Arduino board, as for example, if you are using ESP8266 based boards, like I am doing, you will need to install the libraries for supporting ESP8266 based boards. In the main IDE window go to File, Preferences, and in the Additional Boards Manager URLs text box write ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```.
+There is not yet an official boards package for ESP32, so please follow the instructions [here](https://github.com/espressif/arduino-esp32/blob/master/README.md#installation-instructions). 
 
 # Installing the libraries
 
@@ -24,6 +25,8 @@ To make this run you will need to clone or download a copy of the ViziblesArduin
 # Supported architectures
 
 This driver is a work in progress, so we are currently working on adapting it to new architectures. Vizibles, even it was designed with constrained resources in mind is a demmanding platform with strong security requirements. So the libray is also quite demanding. Currently the Arduino (C++) version of the library is supported on the following architectures:
+
+- ESP32 based boards
 - ESP8266 based boards
 - Arduino MKR1000
 
@@ -147,10 +150,9 @@ void lightOff(const char *parameters[]) {
 ```
 And finally, there is an additional task on the main loop. If you are offering a server, check it for connections and process requests
 ```
-	if(ws.hasClient()) { //Check if any client connected to server
-		WiFiClient c = ws.available();
-		client.process(&c);
-	} else client.process(NULL);
+	WiFiClient c = ws.available(); //Check if any client connected to server
+	if (c) client.process(&c);
+	else client.process(NULL);
 ```
 # Configuring the library
 
