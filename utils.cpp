@@ -117,17 +117,16 @@ int HTTPGetResponse(
 			int l = 0;
 			unsigned long timeoutStart = millis();
 			char c;
-			while ( (http->connected() || http->available()) && (elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) ) {
-				if (http->available()) {
-					c = http->read();
-					bodyLen--;
-					if(response!=NULL && l<resLen) response[l++] = c;  
-					//else Serial.println(bodyLen);	
-					timeoutStart = millis();
-				} else {
-					//Serial.println("Nothing to read");
-					//delay(NETWORK_DELAY);
-				}	
+			if(http->connected()){
+				while (!http->available() && elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) {
+					delay (10);
+				}
+			}	
+			while ( http->connected() && ( http->available() || bodyLen>0 ) && (elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) ) {
+				c = http->read();
+				bodyLen--;
+				if(response!=NULL && l<resLen) response[l++] = c;  
+				timeoutStart = millis();
 			}
 			printTimeSpent("HTTP Client receive payload: \t\t");
 			if(response!=NULL) {
