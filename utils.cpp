@@ -117,7 +117,7 @@ int HTTPGetResponse(
 			int l = 0;
 			unsigned long timeoutStart = millis();
 			char c;
-			while ( (http->connected() || http->available()) && ((millis() - timeoutStart) < NETWORK_TIMEOUT) ) {
+			while ( (http->connected() || http->available()) && (elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) ) {
 				if (http->available()) {
 					c = http->read();
 					bodyLen--;
