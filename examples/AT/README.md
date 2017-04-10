@@ -64,6 +64,12 @@ If you plan to use this AT client to add Vizibles connectivity to your project, 
 
 ## Changelog
 
+* V 1.2
+
+Solved some problems with the execution of rules among things in the same local network.
+
+HTTP client enhanced to speed up connections and communications avoiding timeouts. 
+
 * V 1.1
 
 Added AT+GMR, AT+RST, and AT+GETIP commands.

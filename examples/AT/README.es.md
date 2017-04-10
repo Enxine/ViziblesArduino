@@ -64,6 +64,12 @@ Si planeas utilizar el cliente AT para añadir conectividad con Vizibles a tu pr
 
 ## Lista de cambios
 
+* V 1.2
+
+Resueltos algunos problemas con la ejecución de reglas entre cosas en la misma red local.
+
+Cliente HTTP mejorado para responder más rápido y acelerar las conexiones. 
+
 * V 1.1
 
 Añadidos los comandos AT+GMR, AT+RST, y AT+GETIP.
