@@ -114,8 +114,6 @@ void setup()
 	// initialize output
 	pinMode(LED_OUT, OUTPUT);
 	digitalWrite(LED_OUT, HIGH);
-
-	//delay(500);
 	
 	//Get API key
 	convertFlashStringToMemString(apikey, key);
