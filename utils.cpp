@@ -117,17 +117,16 @@ int HTTPGetResponse(
 			int l = 0;
 			unsigned long timeoutStart = millis();
 			char c;
-			while ( (http->connected() || http->available()) && ((millis() - timeoutStart) < NETWORK_TIMEOUT) ) {
-				if (http->available()) {
-					c = http->read();
-					bodyLen--;
-					if(response!=NULL && l<resLen) response[l++] = c;  
-					//else Serial.println(bodyLen);	
-					timeoutStart = millis();
-				} else {
-					//Serial.println("Nothing to read");
-					//delay(NETWORK_DELAY);
-				}	
+			if(http->connected()){
+				while (!http->available() && elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) {
+					delay (10);
+				}
+			}	
+			while ( http->connected() && ( http->available() || bodyLen>0 ) && (elapsedMillis(timeoutStart) < NETWORK_TIMEOUT) ) {
+				c = http->read();
+				bodyLen--;
+				if(response!=NULL && l<resLen) response[l++] = c;  
+				timeoutStart = millis();
 			}
 			printTimeSpent("HTTP Client receive payload: \t\t");
 			if(response!=NULL) {
@@ -284,6 +283,11 @@ int HTTPFastRequest (
 	LOG(F("\", \""));
 	LOG(method);
 	LOG(F("\", "));
+	if(contentType!=NULL) {
+		LOG(F("\""));
+		LOG(contentType);
+		LOG(F("\", "));
+	} else LOG(F("NULL, "));
 	if(payload!=NULL) {
 		LOG(F("\""));
 		LOG(payload);
@@ -313,8 +317,10 @@ int HTTPFastRequest (
 	char aPort[6];
 	itoa(port, aPort, 10);
 	char aCL[6];
-	itoa(strlen(payload), aCL, 10);
-	int requestLen = 77 + strlen(method) + strlen(path) + strlen(hostname) + strlen(aPort) + strlen(contentType) + strlen(aCL) + strlen(payload);
+	if(payload) {
+		itoa(strlen(payload), aCL, 10);
+	 }
+	int requestLen = 42 + strlen(method) + strlen(path) + strlen(hostname) + strlen(aPort) + (payload!=NULL?18 + strlen(payload) + strlen(aCL):0) + (contentType!=NULL?16+strlen(contentType):0);
 	int i = 0;
 	if(headers) {
 		while(headers[i]!=NULL) {
@@ -332,7 +338,7 @@ int HTTPFastRequest (
 	strcpy(&request[k], path);
 	k += strlen(path);
 	int fl = k + 11;
-	strcpy_P(&request[k], connectionAndHost);
+	strncpy_P(&request[k], connectionAndHost, strlen_P(connectionAndHost));
 	k += 36;
 	strcpy(&request[k], hostname);
 	k += strlen(hostname);
@@ -340,39 +346,45 @@ int HTTPFastRequest (
 	k++;
 	strcpy(&request[k], aPort);
 	k += strlen(aPort);
-	strcpy_P(&request[k], newLine);
+	strncpy_P(&request[k], newLine, 2);
 	k += 2;
 	//User agent can go here if needed
-	strcpy_P(&request[k], contentTypeHeaderName);
-	k += 12;
-	strcpy_P(&request[k], dotSpace);
-	k += 2;
-	strcpy_P(&request[k], contentType);
-	k += strlen(contentType);
-	strcpy_P(&request[k], newLine);
-	k += 2;
+	if(contentType) {
+		strncpy_P(&request[k], contentTypeHeaderName, 12);
+		k += 12;
+		strncpy_P(&request[k], dotSpace, 2);
+		k += 2;
+		strcpy(&request[k], contentType);
+		k += strlen(contentType);
+		strncpy_P(&request[k], newLine, 2);
+		k += 2;
+			 }	
 	if(headers) {
 		i = 0;
 		while(headers[i]!=NULL) {
 			strcpy(&request[k], headers[i]);
 			k += strlen(headers[i]);
-			strcpy_P(&request[k], newLine);
+			strncpy_P(&request[k], newLine, 2);
 			k += 2;
 			i++;
 		}
 	}	
-	strcpy_P(&request[k], contentLenghtHeaderName);
-	k += 14;
-	strcpy_P(&request[k], dotSpace);
+	if(payload) {
+		strncpy_P(&request[k], contentLenghtHeaderName, 14);
+		k += 14;
+		strncpy_P(&request[k], dotSpace, 2);
+		k += 2;
+		strcpy(&request[k], aCL);
+		k += strlen(aCL);
+		strncpy_P(&request[k], newLine, 2);
+		k += 2;
+	}	
+	strncpy_P(&request[k], newLine, 2);
 	k += 2;
-	strcpy(&request[k], aCL);
-	k += strlen(aCL);
-	strcpy_P(&request[k], newLine);
-	k += 2;
-	strcpy_P(&request[k], newLine);
-	k += 2;
-	strcpy(&request[k], payload);
-	k += strlen(payload);
+	if(payload) {
+		strcpy(&request[k], payload);
+		k += strlen(payload);
+	}	
 	request[k] = '\0';
 	printTimeSpent("HTTP Client create request: \t\t");
 	LOGLN(F("HTTPFastRequest(): HTTP request created:"));
@@ -599,8 +611,10 @@ void createHashSignature(
  */
 void getDateString(
 		   char *UTCTime /*!< [out] Pointer to the buffer where UTC time string will be stored (fixed length, 30 bytes).*/){
-	LOGLN(F("getDateString(&buffer)"));	
-	strcpy_P(UTCTime, UTCBase);
+	LOGLN(F("getDateString(&buffer)"));
+	int l = strlen_P(UTCBase);	
+	strncpy_P(UTCTime, UTCBase, l);
+	UTCTime[l] = '\0';
 	char aux[5] = "";
 	strncpy_P(&UTCTime[0], &weekdays[weekday()-1][0], 3);
 	itoa(day(), aux, 10);

@@ -221,40 +221,39 @@ class ViziblesArduino {
 	int parseNewLocal(JsonObject *root_);		
 #endif /*VZ_ITTT_RULES*/	
 
-	static unsigned long lastSync;
-	static tOptions options;
-	//static HttpClient *httpClient;
+	tOptions options;								/*!< Main configuration options.*/
+	unsigned long lastSync;							/*!< Time when time was updated last time.*/
+	double lastPing;								/*!< Last ping try time.*/
+	double lastConnection;							/*!< Last connection try time.*/
+	double lastWiFiConnection;						/*!< Last WiFi connection try time.*/	
+	unsigned char cloudConnected;					/*!< Connection flag. Zero if not connected to the cloud or one if connected.*/
+	unsigned char tryToConnect;						/*!< Try to connect flag. Zero if must remain unconnected to the cloud or one if must try to connect.*/
 	Client *mainClient;
+	HttpClient *httpClient;			
 #ifdef VZ_EXECUTE_FUNCTIONS
-	static functions_t functions[MAX_EXPOSED_FUNCTIONS];
-	static unsigned char exposed;
-	static char functionNames[MAX_EXPOSED_FUNCTIONS_NAME_BUFFER];
-	static int functionNamesIndex;
+	functions_t functions[MAX_EXPOSED_FUNCTIONS];	/*	!< Functions available for remote calls.*/
+	unsigned char exposed;							/*!< Number of functions available for remote calls.*/
+	char functionNames[MAX_EXPOSED_FUNCTIONS_NAME_BUFFER];
+	int functionNamesIndex;
 #endif /*VZ_EXECUTE_FUNCTIONS*/
 #ifdef VZ_HTTP_SERVER
-	static WebApp *httpService;
+	WebApp *httpService;
 	static Router do_;
 	static char headerDateBuffer[];
 	static char headerAuthorizationBuffer[];
 	static char headerContentTypeBuffer[];
-	static char serverReady;
+	char serverReady;								/*!< Flag to check if server was configured properly.*/
 #endif /*VZ_HTTP_SERVER*/
-	static double lastPing;
-	static double lastConnection;
-	static double lastWiFiConnection;		
-	static unsigned char cloudConnected;
-	static unsigned char tryToConnect;
-	HttpClient *httpClient;			
 #ifdef VZ_WEBSOCKETS
-	WebSocketClient* webSocketClient;
-	static int lastWebsocketRead; 
-	static pendingAck_t pendingAcks[MAX_PENDING_ACKS];
-	static unsigned int lastSequenceNumber;
+	WebSocketClient* webSocketClient;				/*!< Main websocket client.*/
+	int lastWebsocketRead; 							/*!< Last websocket read try time.*/
+	pendingAck_t pendingAcks[MAX_PENDING_ACKS];		/*!< Array of pending message acknowledgements.*/
+	unsigned int lastSequenceNumber;				/*!< Last message sequence number used.*/
 #endif /*VZ_WEBSOCKETS*/	
 #ifdef VZ_HTTP
-	static int pingRetries;
+	int pingRetries;								/*!< Number of ping retries still left.*/
 #endif /*VZ_HTTP*/		
-	static int pendingWifiConfig;
+	int pendingWifiConfig;							/*!< Flag to check if there is a pending try to connect to WiFi.*/
 	static char pendingSsid[];
 	static char pendingPass[];
 	static char pendingCfId[];

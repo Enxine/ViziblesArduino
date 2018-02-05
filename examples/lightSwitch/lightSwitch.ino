@@ -14,7 +14,12 @@
 // Websockets: https://github.com/pablorodiz/Arduino-Websocket.git
 
 #include <HttpClient.h>
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
+#elif defined ESP32
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#endif
 #include <ArduinoJson.h>
 #include <aWOT.h>
 #include <ViziblesArduino.h>
@@ -37,18 +42,24 @@ WiFiClient wc1;
 WiFiServer ws(DEFAULT_THING_HTTP_SERVER_PORT);
 ViziblesArduino client(wc, wc1);
 
-int keyState = 1;
+int connected = 0;
+int pendingUpdate = 1;
 int status = 1;
+
 void errorCallback(void) {
+#ifdef VZ_CLOUD_DEBUG
 	Serial.println("Send to cloud failed");
+#endif /*VZ_CLOUD_DEBUG*/
 }
 void onConnectToVizibles(void) {
+	connected = 1;
 #ifdef VZ_CLOUD_DEBUG
 	Serial.println("Connected to Vizibles");
 #endif /*VZ_CLOUD_DEBUG*/
 }
 
 void onDisconnectFromVizibles(void) {
+	connected = 0;
 #ifdef VZ_CLOUD_DEBUG
 	Serial.println("Disconnected from Vizibles");
 #endif /*VZ_CLOUD_DEBUG*/	
@@ -75,15 +86,16 @@ void setup()
 	Serial.println(WiFi.localIP());
 #endif	
 
-
 	// Start TCP server
 	ws.begin();
 	
-	// initialize outputs
+	// initialize input
 	pinMode(INPUT_SW, INPUT);
-	//digitalWrite(LED_OUT, HIGH);
-
-	//delay(500);
+#ifdef ESP32
+	attachInterrupt(INPUT_SW, interrupt, FALLING); //ESP32 uses pin number directly as interrupt number
+#else	
+	attachInterrupt(digitalPinToInterrupt(INPUT_SW), interrupt, FALLING); //In ESP8266, instead, the interrupt number must be deducted from pin number
+#endif	
 	
 	//Get API key
 	convertFlashStringToMemString(apikey, key);
@@ -101,24 +113,22 @@ void setup()
 	client.connect(options, onConnectToVizibles, onDisconnectFromVizibles);
 }
 
-unsigned long lastUpdate = 0;
+
+void interrupt() {
+	if(status == 0) status = 1;
+	else status = 0;
+	pendingUpdate = 1;
+}
 
 void loop()
 {
-	if(ws.hasClient()) { //Check if any client connected to server
-		WiFiClient c = ws.available();
-		client.process(&c);
-	} else client.process(NULL);
+	WiFiClient c = ws.available(); //Check if any client connected to server
+	if (c) client.process(&c);
+	else client.process(NULL);
 	delay(20);	
-	int tmp = digitalRead(13);
-	if (tmp!=keyState) {
-		keyState = tmp;
-		if (keyState == 1) {
-			if(status == 0) status = 1;
-			else status = 0;
-			keyValuePair values[] = {{ "status", status?(char *)"on":(char *)"off" }, {NULL, NULL}};
-			client.update(values, &errorCallback);
-			lastUpdate = millis();
-		}
-	}		
+	if(connected && pendingUpdate){
+		keyValuePair values[] = {{ "status", status?(char *)"on":(char *)"off" }, {NULL, NULL}};
+		client.update(values, &errorCallback); 
+		pendingUpdate = 0;
+	}
 }

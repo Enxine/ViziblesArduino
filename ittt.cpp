@@ -20,10 +20,10 @@
 
 
 //Variables
-static HttpClient *httpClientForITTT = NULL;						/*!< HTTP client used in all outgoing communications.*/
-static char *thingIdForITTT = NULL;									/*!< Thing ID of this thing, need when calling functions in other things.*/ 
-static unsigned char itttRulesBuffer[MAX_ITTT_BUFFER_LENGTH] = ""; 	/*!< Buffer where rules and things information is stored.*/ 
-static unsigned int lastBufferChar = 0;								/*!< Index of the first possition available in the buffer.*/ 
+HttpClient *httpClientForITTT = NULL;						/*!< HTTP client used in all outgoing communications.*/
+char *thingIdForITTT = NULL;									/*!< Thing ID of this thing, need when calling functions in other things.*/ 
+unsigned char itttRulesBuffer[MAX_ITTT_BUFFER_LENGTH] = ""; 	/*!< Buffer where rules and things information is stored.*/ 
+unsigned int lastBufferChar = 0;								/*!< Index of the first possition available in the buffer.*/ 
 
 /** 
  *	@brief Initialize ITTT system.
@@ -37,6 +37,8 @@ void initITTT(
               char *thingId		/*!< [in] Full thing ID of this thing (pointer to char array).*/ ) {
 	httpClientForITTT = http;
 	thingIdForITTT = thingId;
+	lastBufferChar = 0;
+	itttRulesBuffer[0] = '\0';
 }
 
 /** 
@@ -60,6 +62,7 @@ void printBuffer(void) {
  */
 void initITTTRules(void) {
 	lastBufferChar = 0;
+	itttRulesBuffer[0] = '\0';
 }
  
 /** 
@@ -613,7 +616,7 @@ int addITTTTickets(
 				//Create key from API key secret and add some bytes to complete 32
 				char key_[33];
 				strcpy(key_, key);
-				strcpy_P(&key_[20], itttKeyAddition);
+				strncpy_P(&key_[20], itttKeyAddition, strlen_P(itttKeyAddition));
 				//Decrypt ticket
 				aes256_context ctxt;
 				aes256_init(&ctxt, (uint8_t *) key_);
@@ -686,33 +689,34 @@ int evaluateCondition(
  */
 int executeFunction (
                      char *fun,		/*!< [in] Name of the function to be executed. */
-                     char *hostname,	/*!< [in] Host name of the thing with the function to be executed.*/
+                     char *hostname,/*!< [in] Host name of the thing with the function to be executed.*/
                      char *key,		/*!< [in] Authorization key for the remote thing.*/
                      char *id,		/*!< [in] Id of the thing requesting the execution.*/ 
-                     char *params[]  /*!< [in] Parameters for the function (NULL terminated array).*/) {
+                     char *params[] /*!< [in] Parameters for the function (NULL terminated array).*/) {
 	//TODO: create payload from params list and a task id	
 	convertFlashStringToMemString(itttPayload, payload);
 	//Get url path
 	int pathLen = 5 + strlen(fun); 
 	char path[pathLen];
-	strcpy_P(path, itttPath);
+	strncpy_P(path, itttPath, strlen_P(itttPath));
 	strcpy(&path[4], fun);
 	//Create content type header
 	convertFlashStringToMemString(contentType, headerContentType);
 	//Create date header
-	char headerDate[36];
-	strcpy_P(headerDate, date);
-	getDateString(&headerDate[6]); 
+	char headerDate[39];
+	int l = strlen_P(date);
+	strncpy_P(headerDate, date, l);
+	getDateString(&headerDate[l]); 
 	//Create hash signature.
 	//Serial.println(id);
 	unsigned int idLen = strlen(id);
 	char headerAuthorization[56+idLen];
-	strcpy_P(headerAuthorization, authorization);
+	strncpy_P(headerAuthorization, authorization, strlen_P(authorization));
 	strcpy(&headerAuthorization[24], id);
 	headerAuthorization[24 + idLen] = ':';    	
 	convertFlashStringToMemString(itttMethodPost, _post);
 	convertFlashStringToMemString(optionsProtocolHttp, _http);
-	createHashSignature(&headerAuthorization[24 + idLen + 1], key, _post, _http, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, headerContentType, NULL, &headerDate[6], payload); 
+	createHashSignature(&headerAuthorization[24 + idLen + 1], key, _post, _http, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, headerContentType, NULL, &headerDate[l], payload); 
 	char *headers[] = { headerDate, headerAuthorization, NULL };
 	return HTTPFastRequest(httpClientForITTT, hostname, DEFAULT_THING_HTTP_SERVER_PORT, path, HTTP_METHOD_POST, headerContentType, payload, headers, NULL, 0);
 }
@@ -728,12 +732,12 @@ int executeFunction (
  *	@return the number of executed rules.
  */
 int testITTTRules(
-                  keyValuePair values[],			/*!< [in] Array of key-value pairs to check against active rules (NULL terminated).*/
-                  char *meta,						/*!< [in] Buffer to store _Meta parameter content, i.e. list of executed rules.*/
+                  keyValuePair values[],	/*!< [in] Array of key-value pairs to check against active rules (NULL terminated).*/
+                  char *meta,				/*!< [in] Buffer to store _Meta parameter content, i.e. list of executed rules.*/
                   ViziblesArduino *client	/*!< [in] Client object to be able to execute local functions.*/) {
 	if(thingIdForITTT==NULL || httpClientForITTT==NULL) return 0;
 	int i = 0;
-	strcpy_P(meta, itttMetaStart);
+	strncpy_P(meta, itttMetaStart, strlen_P(itttMetaStart));
 	int rules = itttGetNumberOfActiveRules(); 
 	int count = 0;
 	while(values[i].name) {
@@ -767,13 +771,13 @@ int testITTTRules(
 						if(!err) { //If function was executed inform the cloud with rule id to avoid repeating the execution
 							count++;
 							if(count==1){
-								strcpy_P(&meta[15], itttMeta_1);
+								strncpy_P(&meta[15], itttMeta_1, strlen_P(itttMeta_1));
 								strcpy(&meta[16], rule.id);
-								strcpy_P(&meta[28], itttMeta_1);
+								strncpy_P(&meta[28], itttMeta_1, strlen_P(itttMeta_1));
 							} else {	
-								strcpy_P(&meta[29 + ((count-2) * 15)], itttMeta_2); 
+								strncpy_P(&meta[29 + ((count-2) * 15)], itttMeta_2, strlen_P(itttMeta_2)); 
 								strcpy(&meta[31 + ((count-2) * 15)], rule.id);
-								strcpy_P(&meta[43 + ((count-2) * 15)], itttMeta_1); 	
+								strncpy_P(&meta[43 + ((count-2) * 15)], itttMeta_1, strlen_P(itttMeta_1)); 	
 							}
 						}
 					}
@@ -782,7 +786,9 @@ int testITTTRules(
 		}
 		i++;
 	}
-	strcpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd); 
+	int j = strlen_P(itttMetaEnd);
+	strncpy_P(&meta[44 + ((count-2) * 15)], itttMetaEnd, j);
+	meta[44 + ((count-2) * 15) + j] = '\0';
 	return count;
 }
 

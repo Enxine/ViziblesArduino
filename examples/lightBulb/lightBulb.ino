@@ -14,8 +14,12 @@
 // Websockets: https://github.com/pablorodiz/Arduino-Websocket.git
 
 #include <HttpClient.h>
+#ifdef ESP8266
 #include <ESP8266WiFi.h>
-#include <ArduinoJson.h>
+#elif defined ESP32
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#endif#include <ArduinoJson.h>
 #include <aWOT.h>
 #include <ViziblesArduino.h>
 #include <platform.h>
@@ -43,7 +47,9 @@ int connected = 0;
 unsigned long lastUpdate = 0;
 
 void errorCallback(void) {
+#ifdef VZ_CLOUD_DEBUG
 	Serial.println("Send to cloud failed");
+#endif /*VZ_CLOUD_DEBUG*/
 }
 
 void exposingErrorCallback(void) {
@@ -51,17 +57,17 @@ void exposingErrorCallback(void) {
 }
 
 void onConnectToVizibles(void) {
+	connected = 1;
 #ifdef VZ_CLOUD_DEBUG
 	Serial.println("Connected to Vizibles");
 #endif /*VZ_CLOUD_DEBUG*/
-connected = 1;
 }
 
 void onDisconnectFromVizibles(void) {
+	connected = 0;
 #ifdef VZ_CLOUD_DEBUG
 	Serial.println("Disconnected from Vizibles");
 #endif /*VZ_CLOUD_DEBUG*/
-connected = 0;	
 }	
 
 void lightOn(const char *parameters[]) {
@@ -105,11 +111,9 @@ void setup()
 	// Start TCP server
 	ws.begin();
 	
-	// initialize outputs
+	// initialize output
 	pinMode(LED_OUT, OUTPUT);
 	digitalWrite(LED_OUT, HIGH);
-
-	//delay(500);
 	
 	//Get API key
 	convertFlashStringToMemString(apikey, key);
@@ -129,10 +133,9 @@ void setup()
 
 void loop()
 {
-	if(ws.hasClient()) { //Check if any client connected to server
-		WiFiClient c = ws.available();
-		client.process(&c);
-	} else client.process(NULL);
+	WiFiClient c = ws.available(); //Check if any client connected to server
+	if (c) client.process(&c);
+	else client.process(NULL);
 	delay(20);
 	if(connected && exposed<2) {
 		switch(exposed) {

@@ -9,8 +9,9 @@ Leer en otros idiomas: [English](https://github.com/Enxine/ViziblesArduino/blob/
 
 Si aún no tienes el entorno de programación de Arduino o simplemente necesitas una actualización usa, por favor, los enlaces e instrucciones que hay [aquí](https://www.arduino.cc/en/main/software) para instalar la última versión.
 Una vez tengas el entorno instalado necesitarás también algunas librerías de soporte para placas si estas provienen de terceras partes no soportadas directamente por el equipo de Arduino, como es el caso de las placas basadas en ESP8266 que hemos usado nosotros durante el desarrollo de esta librería y en las que se basan los ejemplos disponibles. Para instalar las librerías de soporte para ESP8266 usa el menú principal del IDE de Arduino; Archivo, Preferencias, y en el cuadro de texto para URLs adicionales para el gestor de placas añade ```http://arduino.esp8266.com/stable/package_esp8266com_index.json```.
+Para ESP32 no hay un paquete oficial para el gestor de placas todavía, así que habrá que seguir [estas](https://github.com/espressif/arduino-esp32/blob/master/README.md#installation-instructions) instrucciones. 
 
-#Instalando las librerías
+# Instalando las librerías
 
 Para conseguir que esto funcione vas a tener que clonar o descargar una copia de la librería ViziblesArduino a la carpeta libraries de tu IDE de Arduino, pero también tendrás que hacer lo mismo con las siguientes librerías:
 
@@ -21,16 +22,17 @@ Para conseguir que esto funcione vas a tener que clonar o descargar una copia de
 - JSON: [https://github.com/bblanchon/ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 - Websockets: [https://github.com/pablorodiz/Arduino-Websocket.git](https://github.com/pablorodiz/Arduino-Websocket.git)
 
-#Arquitecturas soportadas
+# Arquitecturas soportadas
 
 Este driver está actualmente en desarrollo, por lo que estamos trabajando para adaptarlo a distintas arquitecturas. Vizibles fue diseñado pensando en plataformas con recursos limitados, pero aún así, debido a sus fuertes requisitos en términos de seguridad, es una plataforma que demanda bastantes recursos. Por tanto la librería de soporte de Vizibles tambien lo es, y actualmente la versión en C++ para Arduino está soportada solamente en las siguientes arquitecturas:
 
+- Placas basadas en ESP32
 - Placas basadas en ESP8266
 - Arduino MKR1000
 
 Por ahora sólo soportamos conexiones SSL con la platforma en ESP8266, pero estamos trabajando duro para añadir el soporte en placas basadas en Atmel.
  
-#Explorando los ejemplos
+# Explorando los ejemplos
 
 En la carpeta de ejemplos hay varios listos para ejecutar. Algunos son específicos para la placa MKR1000, pero la mayoría fueron escritos para la [Espresso Lite 2.0](http://www.espressolite.com/) que es por ahora la placa que podemos recomendar.
 Los ejemplos principales son light-bulb y light-switch, que emulan el comportamento de una bombilla y su interruptor correspondiente. En formato Internet de las Cosas, claro. 
@@ -151,11 +153,10 @@ void lightOff(const char *parameters[]) {
 ```
 Finalmente hay una tarea adicional que debe hacerse también en el bucle principal, que es consultar si hay conexiones pendientes al servidor, procesarlas, y atender las peticiones si las hubiese
 ```
-	if(ws.hasClient()) { //Check if any client connected to server
-		WiFiClient c = ws.available();
-		client.process(&c);
-	} else client.process(NULL);
+	WiFiClient c = ws.available(); //Check if any client connected to server
+	if (c) client.process(&c);
+	else client.process(NULL);
 ```
-#Configurar la librería
+# Configurar la librería
 
 La librería dispone de algunas opciones para reducir el tamaño del fichero binario resultante o para incrementar la cantidad de cosas que se reportan por el puerto serie. Todas las opciones de compilación se encuentran agrupadas en el fichero ```config.h```.

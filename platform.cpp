@@ -9,9 +9,18 @@
 #include "utils.h"
 
 #if defined ESP8266
+#define IP_ADDRESS_TYPE ip_addr_t
+#define CONST_IP_ADDRESS_TYPE ip_addr_t
 #include <ESP8266WiFi.h>
 #include <IPAddress.h>
 #include "lwip/netif.h"
+#include "netif/etharp.h"
+#elif defined ESP32
+#define IP_ADDRESS_TYPE ip4_addr_t
+#define CONST_IP_ADDRESS_TYPE const ip4_addr_t
+#include <WiFi.h>
+#include <IPAddress.h>
+#include "netif/wlanif.h"
 #include "netif/etharp.h"
 #elif defined ARDUINO_SAMD_MKR1000
 #include <WiFi101.h>
@@ -39,7 +48,7 @@ void macToStr(const uint8_t* mac, char *buffer) {
 long getMACSeed(void) {
 	LOGLN(F("[platform] getMACSeed()"));
 	long m = 0;
-#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000
+#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000 || defined ESP32
 	unsigned char mac[6];
 	WiFi.macAddress(mac);
 	for(int i=0; i<6; i++) {
@@ -61,7 +70,7 @@ String IpAddress2String(const IPAddress &ipAddress) {
 
 char *getLocalIp(char *buf /*16 bytes*/) {
 	LOGLN(F("[platform] getLocalIp()"));
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	String clientIp = WiFi.localIP().toString();
 	strcpy(buf, &clientIp[0]);
 #elif defined ARDUINO_SAMD_MKR1000
@@ -75,7 +84,7 @@ char *getLocalIp(char *buf /*16 bytes*/) {
 
 char *getGatewayIp(char *buf /*16 bytes*/) {
 	LOGLN(F("[platform] getGatewayIp()"));
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	String gatewayIp = WiFi.gatewayIP().toString();
 	strcpy(buf, &gatewayIp[0]);
 #elif defined ARDUINO_SAMD_MKR1000
@@ -89,7 +98,7 @@ char *getGatewayIp(char *buf /*16 bytes*/) {
 
 char *getLocalMac(char *buf /*18 bytes*/) {
 	LOGLN(F("[platform] getLocalMac()"));
-#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000
+#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000 || defined ESP32
 	unsigned char mac[6] = {0,0,0,0,0,0};
 	WiFi.macAddress(mac);
 	macToStr(mac, buf);
@@ -105,30 +114,37 @@ char *getGatewayMac(char *buf /*18 bytes*/) {
 	struct eth_addr *eth_ret;
 	int entry = -1;
 
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
+	
+	// #if defined ESP8266
 	// TBD: error 'ip_route' was not declared in this scope
 	//
 	return NULL;
 	//
-	// netif* interface = ip_route((ip_addr_t *)&gwip);
-	// ip_addr_t *ip_ret;
-	// etharp_request(interface, (ip_addr_t *)&gwip);
-	// delay (500); //TODO: This is a magic number. Less time induces erroneous results on arp response
-	// int t = 0;
-	// while ((entry == -1) && t < 20) {
-	// 	delay(100);
-	// 	entry = etharp_find_addr(interface, (ip_addr_t *)&gwip, &eth_ret, &ip_ret);
-	// 	t++;
-	// }
-	// if (entry == -1 || t == 20) {
-	// 	LOGLN(F("[platform] getGatewayMac() error: ARP error, gateway not found"));
-	// 	return NULL;
-	// } else {
-	// 	macToStr((unsigned char *)eth_ret, buf);
-	// 	LOG(F("[platform] getGatewayMac(): "));
-	// 	LOGLN(buf);
-	// 	return buf;
-	// }
+	
+	// 	netif* interface = ip_route((IP_ADDRESS_TYPE *)&gwip);
+	// #elif defined ESP32
+	// 	netif* interface = netif_default;
+	// #endif
+	// 	etharp_request(interface, (IP_ADDRESS_TYPE *)&gwip);
+	// 	IP_ADDRESS_TYPE *ip_ret;
+	// 	delay (500); //TODO: This is a magic number. Less time induces erroneous results on arp response on ESP8266
+	// 	int t = 0;
+	// 	while ((entry == -1) && t < 20) {
+	// 		delay(100);
+	// 		entry = etharp_find_addr(interface, (IP_ADDRESS_TYPE *)&gwip, &eth_ret, (CONST_IP_ADDRESS_TYPE **)&ip_ret);
+	// 		t++;
+	// 	}
+	// 	if (entry == -1 || t == 20) {
+	// 		LOGLN(F("[platform] getGatewayMac() error: ARP error, gateway not found"));
+	// 		return NULL;
+	// 	} else {
+	// 		macToStr((unsigned char *)eth_ret, buf);
+	// 		LOG(F("[platform] getGatewayMac(): "));
+	// 		LOGLN(buf);
+	// 		return buf;
+	// 	}
+
 #elif defined ARDUINO_SAMD_MKR1000
 	// TODO
 	buf[0] = '1';
@@ -164,7 +180,7 @@ int connectToWiFiAP(char *SSID, char *passwd, encryptionType_t encType) {
 	LOG(F("\", \""));
 	LOG(passwd);
 	LOG(F("\", "));
-#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000
+#if defined ESP8266 || defined ARDUINO_SAMD_MKR1000 || defined ESP32
 	//Enable WiFi
 	switch (encType) {
 	case OPEN:
@@ -194,7 +210,7 @@ int connectToWiFiAP(char *SSID, char *passwd, encryptionType_t encType) {
 		LOGLN(F("connectToWiFiAP() error: Failed to connect"));
 		return -1;
 	}
-#if defined ESP8266 // TODO: what about MKR1000?
+#if defined ESP8266 || defined ESP32 // TODO: what about MKR1000?
 	WiFi.setAutoConnect(true);
 #endif
 	wifiConnected = 1;
@@ -211,7 +227,7 @@ int connectToWiFiAP(char *SSID, char *passwd, encryptionType_t encType) {
 
 int disconnectFromWiFiAp(void) {
 	LOGLN(F("[platform] disconnectFromWiFiAp()"));
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	if(WiFi.disconnect()) {
 		LOGLN(F("[platform] disconnectFromWiFiAp(): disconnected OK"));
 		wifiConnected = 0;
@@ -230,7 +246,7 @@ int disconnectFromWiFiAp(void) {
 int isWiFiConnected(void) {
 	LOGLN(F("[platform] isWiFiConnected()"));
 	bool wCon = false;
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	if(WiFi.isConnected()) wCon = true;
 #elif defined ARDUINO_SAMD_MKR1000
 	if(WiFi.status() == WL_CONNECTED) wCon = true;
@@ -255,7 +271,7 @@ int isWiFiConnected(void) {
 
 int enableWiFiAp(void) {
 	LOGLN(F("[platform] enableWiFiAp()"));
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	WiFi.setAutoConnect(false);
 	char ssid[] = VZ_DEFAULT_AP_SSID;
 	char mac[18];
@@ -286,7 +302,7 @@ int enableWiFiAp(void) {
 
 int disableWiFiAp(void) {
 	LOGLN(F("[platform] disableWiFiAp()"));
-#if defined ESP8266
+#if defined ESP8266 || defined ESP32
 	//if(WiFi.isConnected()) {
 	if(WiFi.status() == WL_CONNECTED) {
 		String key = WiFi.psk();
@@ -320,7 +336,7 @@ void tryToConnectToLastAP(bool b) {
 		tryingToConnectToLastAP = 0;
 		LOGLN(F("[platform] tryToConnectToLastAP(false)"));
 	}
-#if defined ESP8266 // TODO: what about MKR1000?
+#if defined ESP8266 || defined ESP32 // TODO: what about MKR1000?
 	WiFi.setAutoConnect(b);
 #endif
 }
