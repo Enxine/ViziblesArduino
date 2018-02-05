@@ -106,25 +106,29 @@ char *getGatewayMac(char *buf /*18 bytes*/) {
 	int entry = -1;
 
 #if defined ESP8266
-	netif* interface = ip_route((ip_addr_t *)&gwip);
-	ip_addr_t *ip_ret;
-	etharp_request(interface, (ip_addr_t *)&gwip);
-	delay (500); //TODO: This is a magic number. Less time induces erroneous results on arp response
-	int t = 0;
-	while ((entry == -1) && t < 20) {
-		delay(100);
-		entry = etharp_find_addr(interface, (ip_addr_t *)&gwip, &eth_ret, &ip_ret);
-		t++;
-	}
-	if (entry == -1 || t == 20) {
-		LOGLN(F("[platform] getGatewayMac() error: ARP error, gateway not found"));
-		return NULL;
-	} else {
-		macToStr((unsigned char *)eth_ret, buf);
-		LOG(F("[platform] getGatewayMac(): "));
-		LOGLN(buf);
-		return buf;
-	}
+	// TBD: error 'ip_route' was not declared in this scope
+	//
+	return NULL;
+	//
+	// netif* interface = ip_route((ip_addr_t *)&gwip);
+	// ip_addr_t *ip_ret;
+	// etharp_request(interface, (ip_addr_t *)&gwip);
+	// delay (500); //TODO: This is a magic number. Less time induces erroneous results on arp response
+	// int t = 0;
+	// while ((entry == -1) && t < 20) {
+	// 	delay(100);
+	// 	entry = etharp_find_addr(interface, (ip_addr_t *)&gwip, &eth_ret, &ip_ret);
+	// 	t++;
+	// }
+	// if (entry == -1 || t == 20) {
+	// 	LOGLN(F("[platform] getGatewayMac() error: ARP error, gateway not found"));
+	// 	return NULL;
+	// } else {
+	// 	macToStr((unsigned char *)eth_ret, buf);
+	// 	LOG(F("[platform] getGatewayMac(): "));
+	// 	LOGLN(buf);
+	// 	return buf;
+	// }
 #elif defined ARDUINO_SAMD_MKR1000
 	// TODO
 	buf[0] = '1';
