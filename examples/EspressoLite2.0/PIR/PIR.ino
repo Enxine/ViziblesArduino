@@ -170,38 +170,42 @@ void interrupt() {
 }
 
 void loop() {
-    //Check for external connections to the local HTTP server and periodic 
-    //process of the status of the connection with Vizibles. This must be included in 
-    //any Vizibles connected thing.
-    if(ws.hasClient()) { //Check if any client connected to server
+    // Check for external connections to the local HTTP server and periodic 
+    // process of the status of the connection with Vizibles. This must be
+    // included in any Vizibles connected thing.
+    if (ws.hasClient()) { //Check if any client connected to server
 	WiFiClient c = ws.available();
 	client.process(&c);
-    } else client.process(NULL);
+    } else {
+	client.process(NULL);
+    }
+
     //Test PIR INPUT
     pirState = digitalRead(PIR_INPUT);
-    if(ledActive && pirState) digitalWrite(LED_OUTPUT, LOW);
+    if (ledActive && pirState) digitalWrite(LED_OUTPUT, LOW);
     else digitalWrite(LED_OUTPUT, HIGH);
+
     //Expose functions as soon as connected
-    if(connected) {
-	if(exposed<2) {
+    if (connected) {
+	if (exposed < 2) {
 	    switch(exposed) {
 	    case 0: 
-		if(!client.expose("activateLED", activateLED, exposingErrorCallback)) exposed++;
+		if (!client.expose("activateLED", activateLED, exposingErrorCallback)) exposed++;
 		break;
 	    case 1:
-		if(!client.expose("deactivateLED", deactivateLED, exposingErrorCallback)) exposed++;
+		if (!client.expose("deactivateLED", deactivateLED, exposingErrorCallback)) exposed++;
 		break;
 	    }
 	    //Or update variables when they change			
-	} else if(pendingUpdate) {
+	} else if (pendingUpdate) {
 	    keyValuePair values[3];
 	    values[0].name = "movement";
-	    values[0].value = pirState?(char*)"on":(char*)"off";
+	    values[0].value = pirState ? (char*)"on" : (char*)"off";
 	    values[1].name = "led";
-	    values[1].value = ledActive?(char*)"active":(char*)"unactive";
+	    values[1].value = ledActive ? (char*)"active" : (char*)"unactive";
 	    values[2].name = NULL;
 	    values[2].value = NULL; 
-	    if(!client.update(values, errorCallback)) pendingUpdate = 0;;
+	    if (!client.update(values, errorCallback)) pendingUpdate = 0;;
 			
 	}
     }	
